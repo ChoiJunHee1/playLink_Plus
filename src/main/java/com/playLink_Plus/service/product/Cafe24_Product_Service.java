@@ -83,7 +83,7 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
         List<ProductMaster> productOptionNull = new ArrayList<>();
         List<ProductMaster> products = new ArrayList<>();
         List<VariantOption> VariantOptions = new ArrayList<>();
-        for (int q = 0; q < offsetInt;q++) {
+        for (int q = 0; q <= offsetInt;q++) {
             AuthMaster refreshTokenIssued = cafe24_auth_service.refreshTokenIssued(mall_id);
             HttpResponse<String> response2 = Unirest.get("https://" + mall_id + ".cafe24api.com/api/v2/products?offset=" + q + "00&limit=100")
                     .header("Content-Type", apiCallDto.getContent_Type())

@@ -64,9 +64,7 @@ public class AuthController {
         }
 
         try {
-
             product_service.issued_Product_Item(mallid,authMaster);
-
         }catch (Exception e){
             log.error("최초 토큰 발급시 상품 테이블 업데이트 중 오류 발생");
         }
