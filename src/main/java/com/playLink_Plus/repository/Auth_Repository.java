@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface Auth_Repository extends JpaRepository <AuthMaster,Long> {
+public interface Auth_Repository extends JpaRepository <AuthMaster,String> {
     AuthMaster findByMallId(String mallId);
 
 //    Optional<AuthMaster> findByMallId(String mallid); //카멜문법 아주 중요함!!

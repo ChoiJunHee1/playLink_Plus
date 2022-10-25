@@ -1,13 +1,15 @@
 package com.playLink_Plus.service.auth;
 
-import com.playLink_Plus.dto.apiDto;
+import com.playLink_Plus.dto.ApiCallDto;
 import com.playLink_Plus.entity.AuthMaster;
+import com.playLink_Plus.repository.Auth_Repository;
 import com.playLink_Plus.service.Auth_Service_interface;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +18,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class Cafe24_Auth_Service implements Auth_Service_interface {
 
-    apiDto api = new apiDto();
+    @Autowired
+    final Auth_Repository auth_repository;
+
+    ApiCallDto api = new ApiCallDto();
 
     JSONParser parser = new JSONParser();
+
+    public Cafe24_Auth_Service(Auth_Repository auth_repository) {
+        this.auth_repository = auth_repository;
+    }
+
     @Override
     @Transactional
     public AuthMaster issued_Token(String mall_id, String code) {
@@ -38,6 +48,7 @@ public class Cafe24_Auth_Service implements Auth_Service_interface {
         } catch (Exception e) {
             log.error("토큰 데이터 jsonparse중 오류 발생");
         }
+
         AuthMaster authMaster = AuthMaster.builder()
                 .systemId("cafe24")
                 .mallId(tokenData.get("mall_id").toString())
@@ -46,15 +57,15 @@ public class Cafe24_Auth_Service implements Auth_Service_interface {
                 .refreshTokenexpiresat(tokenData.get("refresh_token_expires_at").toString())
                 .AuthorizationCode("Basic MGJsdkxYNFVPQnVsZWQ1Q255VHdmSTpGM0pOT0I3UER4Vm4wNEVzZlpZdVlE") // 추후 환경변수 처리해야됨
                 .build();
-
-        return authMaster ;
+        System.out.println(authMaster);
+        auth_repository.save(authMaster);
+        return authMaster;
     }
 
     @Override
     @Transactional
-    public AuthMaster refreshTokenIssued(AuthMaster refreshToken) {
-        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        System.out.println("@@@@@@@@@@@@@@@@@@");
+    public AuthMaster refreshTokenIssued(String mallId) {
+        AuthMaster refreshToken = auth_repository.findByMallId(mallId);
         HttpResponse<String> response = Unirest.post("https://" + refreshToken.getMallId() + ".cafe24api.com/api/v2/oauth/token")
                 .header("Authorization", api.getAuthorization())
                 .header("Content-Type", api.getContent_Type())
@@ -71,12 +82,15 @@ public class Cafe24_Auth_Service implements Auth_Service_interface {
             log.error("refresh token 발급중 오류 발생");
         }
 
+
         AuthMaster refresh_List = AuthMaster.builder()
                 .mallId(refreshTokenData.get("mall_id").toString())
                 .accessToken(refreshTokenData.get("access_token").toString())
                 .refreshToken(refreshTokenData.get("refresh_token").toString())
                 .refreshTokenexpiresat(refreshTokenData.get("refresh_token_expires_at").toString())
                                 .build();
+
+        auth_repository.save(refresh_List);
 
         return refresh_List;
     }

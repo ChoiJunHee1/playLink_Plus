@@ -1,5 +1,6 @@
 package com.playLink_Plus.entity;
 
+import com.playLink_Plus.identifier.Product_Identifier;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,12 +9,9 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @Builder
@@ -21,19 +19,17 @@ import java.util.List;
 @AllArgsConstructor //전체 변수를 생성하는 생성자를 만들어
 @Entity //테이블과의 매핑
 @EntityListeners(AuditingEntityListener.class)
-public class AuthMaster implements Serializable{
+@IdClass(Product_Identifier.class)
+public class ProductMaster implements Serializable {
 
     @Id
     private String mallId;
 
-    @Column(insertable = true,updatable = false)
-    private String systemId;
-
-    private String refreshTokenexpiresat;
-    @Column(insertable = true,updatable = false)
-    private String AuthorizationCode;
-    private String accessToken;
-    private String refreshToken;
+    private String productName;
+    private String productCode;
+    @Id
+    private String variantCode;
+    private int optionQty;
 
     @CreatedDate
     @Column(insertable = true,updatable = false)
@@ -42,4 +38,6 @@ public class AuthMaster implements Serializable{
     @LastModifiedDate
     @Column(insertable = false,updatable = true)
     private LocalDateTime updateAt;
+
+
 }

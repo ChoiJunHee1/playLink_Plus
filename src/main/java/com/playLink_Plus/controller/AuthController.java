@@ -2,9 +2,12 @@ package com.playLink_Plus.controller;
 
 import com.playLink_Plus.entity.AuthMaster;
 import com.playLink_Plus.repository.Auth_Repository;
+import com.playLink_Plus.repository.Options_Repository;
+import com.playLink_Plus.repository.Product_Repository;
 import com.playLink_Plus.service.Auth_Service_interface;
+import com.playLink_Plus.service.Product_Service_Interface;
 import com.playLink_Plus.service.auth.Cafe24_Auth_Service;
-import com.playLink_Plus.service.product.Product_Service;
+import com.playLink_Plus.service.product.Cafe24_Product_Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -21,11 +24,15 @@ import org.springframework.web.servlet.view.RedirectView;
 @RequestMapping("/auth")
 public class AuthController {
 
+    AuthMaster authMaster;
     final Auth_Repository auth_repository;
+    final Product_Repository product_repository;
+    final Options_Repository options_repository;
+    final Cafe24_Auth_Service cafe24_auth_service;
     private String mallid;
      Auth_Service_interface auth_service = null;
 
-     final Product_Service product_service;
+     Product_Service_Interface product_service = null ;
 
     @GetMapping("/authCode")
     public RedirectView issued_Auth_Code (@RequestParam("mall_id") String mall_id) {
@@ -47,32 +54,41 @@ public class AuthController {
     public String issued_access_token(@RequestParam("code") String code ){
 
 
-            auth_service = new Cafe24_Auth_Service();
+        auth_service = new Cafe24_Auth_Service(auth_repository);
+
+        product_service = new Cafe24_Product_Service(cafe24_auth_service, options_repository, product_repository);
         try {
-            AuthMaster issued_Data = auth_service.issued_Token(mallid,code );
-            auth_repository.save(issued_Data); // db 저장
+            authMaster = auth_service.issued_Token(mallid, code);
         }catch (Exception e){
             log.error("인증 토큰 발급 진행중 오류가 발생 하였습니다."+e.getMessage());
         }
-        product_service.issued_Product_Item(mallid);
+
+        try {
+
+            product_service.issued_Product_Item(mallid,authMaster);
+
+        }catch (Exception e){
+            log.error("최초 토큰 발급시 상품 테이블 업데이트 중 오류 발생");
+        }
+
         return "onlineMallGuide";
     }
 
-    @RequestMapping("/test")
-    public String testController(@RequestParam("mall_id") String mallId) {
-
+//    @RequestMapping("/test")
+//    public String testController(@RequestParam("mall_id") String mallId) {
+//
 //            //추후 고도몰 service 들어올 자리
+//        auth_service = new Cafe24_Auth_Service(auth_repository);
+//        Object Options_Repository = null;
+//        product_service = new Cafe24_Product_Service(cafe24_auth_service, options_repository, product_repository);
 //            try {
-//                auth_service = new Cafe24_Auth_Service();
-//                AuthMaster refreshToken = auth_repository.findByMallId(mallId);
-//                AuthMaster issued_Data = auth_service.refreshTokenIssued(refreshToken);
-//                auth_repository.save(issued_Data);
+//                authMaster  = auth_service.refreshTokenIssued(mallId);
+//                product_service.issued_Product_Item(mallId,authMaster);
 //            } catch (Exception e) {
 //                log.error(e.getMessage());
 //            }
-            product_service.issued_Product_Item(mallId);
-
-        return "onlineMallGuide";
-    }
+//
+//        return "onlineMallGuide";
+//    }
 
 }

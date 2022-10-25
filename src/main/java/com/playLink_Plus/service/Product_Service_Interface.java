@@ -1,5 +1,6 @@
-package com.playlinkplus.api.service;
+package com.playLink_Plus.service;
 
+import com.playLink_Plus.entity.AuthMaster;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,5 +9,5 @@ import org.springframework.stereotype.Service;
 public interface Product_Service_Interface {
 
     @Autowired
-    String issued_Product_Item(String mall_id) throws ParseException;
+    void issued_Product_Item(String mall_id, AuthMaster authMaster) throws ParseException;
 }
