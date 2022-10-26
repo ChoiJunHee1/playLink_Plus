@@ -24,12 +24,15 @@ public class ProductMaster implements Serializable {
 
     @Id
     private String mallId;
+    @Id
+    private String systemId;
 
     private String productName;
     private String productCode;
-    @Id
     private String variantCode;
     private int optionQty;
+    @Column(insertable = true,updatable = false)
+    private int productNo;
 
     @CreatedDate
     @Column(insertable = true,updatable = false)

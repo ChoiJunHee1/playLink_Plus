@@ -1,6 +1,5 @@
 package com.playLink_Plus.entity;
 
-import com.playLink_Plus.identifier.Product_Identifier;
 import com.playLink_Plus.identifier.Variant_Identifier;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,17 +26,21 @@ public class VariantOption implements Serializable {
     private String mallId;
     @Id
     private String variantCode;
-    @Id
     private String optionName;
-    @Id
     private String optionValue;
     @CreatedDate
     @Column(insertable = true,updatable = false)
     private LocalDateTime createdAt;
 
+    @Id
+    private String optionKey;
+    @Id
+    private String systemId;
+
     @LastModifiedDate
     @Column(insertable = false,updatable = true)
     private LocalDateTime updateAt;
+
 
 
 }

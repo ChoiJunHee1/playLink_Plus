@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,9 +43,6 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
     }
 
     ProductMaster productMaster;
-
-
-
     ApiCallDto apiCallDto = new ApiCallDto();
 
     @Transactional
@@ -107,7 +105,8 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
                     double product_No = (double) productList.get(i).get("product_no");
                     int product_No_int = (int) product_No;
 
-                    Thread.sleep(500);
+                    Thread.sleep(250);
+
                     HttpResponse<String> response3 = Unirest.get("https://" + mall_id + ".cafe24api.com/api/v2/products/" + product_No_int + "/variants")
                             .header("Content-Type", apiCallDto.getContent_Type())
                             .header("X-Cafe24-Api-Version", apiCallDto.getX_Cafe24_Api_Version())
@@ -124,10 +123,12 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
 
                         if (variantList.get(j).get("options") == null) {
                             ProductMaster product_List = ProductMaster.builder()
-                                    .mallId(mall_id).productName(product_name)
+                                    .mallId(mall_id)
                                     .productCode(product_code)
                                     .productName(product_name)
                                     .variantCode((String) variantList.get(j).get("variant_code"))
+                                    .productNo(product_No_int)
+                                    .systemId("cafe24")
                                     .optionQty(0).build();
                             productOptionNull.add(product_List);
 
@@ -139,15 +140,19 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
                                     .mallId(mall_id)
                                     .productName(product_name)
                                     .productCode(product_code)
-                                    .productName(product_name)
                                     .variantCode((String) variantList.get(j).get("variant_code"))
+                                    .productNo(product_No_int)
+                                    .systemId("cafe24")
                                     .optionQty(variantOptionsList.size())
                                     .build();
                             products.add(product_List);
 
                             for (int t = 0; t < variantOptionsList.size(); t++) {
+                                LocalDateTime now = LocalDateTime.now();
                                 VariantOption variantOption = VariantOption.builder()
                                         .mallId(mall_id)
+                                        .systemId("cafe24")
+                                        .optionKey(String.valueOf(t))
                                         .variantCode((String) variantList.get(j).get("variant_code"))
                                         .optionName((String) variantOptionsList.get(t).get("name"))
                                         .optionValue((String) variantOptionsList.get(t).get("value"))

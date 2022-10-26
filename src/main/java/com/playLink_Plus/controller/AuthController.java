@@ -49,7 +49,6 @@ public class AuthController {
     return  redirectView;
     }
 
-    @Transactional
     @RequestMapping("/IssuedToken")
     public String issued_access_token(@RequestParam("code") String code ){
 

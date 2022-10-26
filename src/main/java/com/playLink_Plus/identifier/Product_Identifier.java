@@ -13,5 +13,5 @@ import lombok.Data;
 public class Product_Identifier implements Serializable {
     private String mallId;
     private String variantCode;
-
+    private String systemId;
 }
