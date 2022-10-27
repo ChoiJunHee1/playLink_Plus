@@ -62,12 +62,6 @@ public class AuthController {
             log.error("인증 토큰 발급 진행중 오류가 발생 하였습니다."+e.getMessage());
         }
 
-        try {
-            product_service.issued_Product_Item(mallid,authMaster);
-        }catch (Exception e){
-            log.error("최초 토큰 발급시 상품 테이블 업데이트 중 오류 발생");
-        }
-
         return "onlineMallGuide";
     }
 

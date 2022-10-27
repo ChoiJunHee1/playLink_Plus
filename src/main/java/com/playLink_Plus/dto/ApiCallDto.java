@@ -2,8 +2,7 @@ package com.playLink_Plus.dto;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApiCallDto {
@@ -14,6 +13,7 @@ public class ApiCallDto {
     private String redirect_uri = "https://playlink-plus.xmd.co.kr/auth/IssuedToken";
     private String X_Cafe24_Api_Version = "2022-09-01";
     private String X_Cafe24_Client_Id = "0blvLX4UOBuled5CnyTwfI";
+    private String Insert_Content_Type = "application/json";
 
 
 }
