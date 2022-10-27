@@ -47,8 +47,9 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
 
     @Transactional
     @Override
-    public void issued_Product_Item(String mall_id, AuthMaster authMaster) {
-        HttpResponse<String> response = Unirest.get("https://" + mall_id + ".cafe24api.com/api/v2/products/count")
+    public void issued_Product_Item(String mallid, AuthMaster authMaster) {
+        authMaster  = cafe24_auth_service.refreshTokenIssued(mallid);
+        HttpResponse<String> response = Unirest.get("https://" + mallid + ".cafe24api.com/api/v2/products/count")
                 .header("Content-Type", apiCallDto.getContent_Type())
                 .header("X-Cafe24-Api-Version", apiCallDto.getX_Cafe24_Api_Version())
                 .header("'Authorization", "Bearer " + authMaster.getAccessToken())
@@ -82,8 +83,8 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
         List<ProductMaster> products = new ArrayList<>();
         List<VariantOption> VariantOptions = new ArrayList<>();
         for (int q = 0; q <= offsetInt;q++) {
-            AuthMaster refreshTokenIssued = cafe24_auth_service.refreshTokenIssued(mall_id);
-            HttpResponse<String> response2 = Unirest.get("https://" + mall_id + ".cafe24api.com/api/v2/products?offset=" + q + "00&limit=100")
+            AuthMaster refreshTokenIssued = cafe24_auth_service.refreshTokenIssued(mallid);
+            HttpResponse<String> response2 = Unirest.get("https://" + mallid + ".cafe24api.com/api/v2/products?offset=" + q + "00&limit=100")
                     .header("Content-Type", apiCallDto.getContent_Type())
                     .header("X-Cafe24-Api-Version", apiCallDto.getX_Cafe24_Api_Version())
                     .header("'Authorization", "Bearer " + authMaster.getAccessToken())
@@ -107,7 +108,7 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
 
                     Thread.sleep(250);
 
-                    HttpResponse<String> response3 = Unirest.get("https://" + mall_id + ".cafe24api.com/api/v2/products/" + product_No_int + "/variants")
+                    HttpResponse<String> response3 = Unirest.get("https://" + mallid + ".cafe24api.com/api/v2/products/" + product_No_int + "/variants")
                             .header("Content-Type", apiCallDto.getContent_Type())
                             .header("X-Cafe24-Api-Version", apiCallDto.getX_Cafe24_Api_Version())
                             .header("'Authorization", "Bearer " + refreshTokenIssued.getAccessToken())
@@ -123,7 +124,7 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
 
                         if (variantList.get(j).get("options") == null) {
                             ProductMaster product_List = ProductMaster.builder()
-                                    .mallId(mall_id)
+                                    .mallId(mallid)
                                     .productCode(product_code)
                                     .productName(product_name)
                                     .variantCode((String) variantList.get(j).get("variant_code"))
@@ -137,7 +138,7 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
                             List<Map<String, Object>> variantOptionsList = (List) variantList.get(j).get("options");
 
                             ProductMaster product_List = ProductMaster.builder()
-                                    .mallId(mall_id)
+                                    .mallId(mallid)
                                     .productName(product_name)
                                     .productCode(product_code)
                                     .variantCode((String) variantList.get(j).get("variant_code"))
@@ -150,7 +151,7 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
                             for (int t = 0; t < variantOptionsList.size(); t++) {
                                 LocalDateTime now = LocalDateTime.now();
                                 VariantOption variantOption = VariantOption.builder()
-                                        .mallId(mall_id)
+                                        .mallId(mallid)
                                         .systemId("cafe24")
                                         .optionKey(String.valueOf(t))
                                         .variantCode((String) variantList.get(j).get("variant_code"))
