@@ -3,19 +3,16 @@ package com.playLink_Plus.service.product;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.playLink_Plus.dto.ApiCallDto;
-import com.playLink_Plus.dto.ProductDto;
 import com.playLink_Plus.entity.AuthMaster;
 import com.playLink_Plus.entity.ProductMaster;
 import com.playLink_Plus.entity.VariantOption;
-import com.playLink_Plus.repository.Options_Repository;
-import com.playLink_Plus.repository.Product_Repository;
-import com.playLink_Plus.service.Product_Service_Interface;
-import com.playLink_Plus.service.auth.Cafe24_Auth_Service;
+import com.playLink_Plus.repository.OptionsRepository;
+import com.playLink_Plus.repository.ProductRepository;
+import com.playLink_Plus.service.ProductServiceInterface;
+import com.playLink_Plus.service.auth.Cafe24AuthService;
 import kong.unirest.HttpResponse;
-import kong.unirest.ObjectMapper;
 import kong.unirest.Unirest;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -23,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.Reader;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,19 +28,19 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class Cafe24_Product_Service implements Product_Service_Interface {
+public class Cafe24ProductService implements ProductServiceInterface {
     @Autowired
-   final Cafe24_Auth_Service cafe24_auth_service;
+   final Cafe24AuthService cafe24_auth_service;
 
     @Autowired
-   final Options_Repository options_repository;
+   final OptionsRepository options_repository;
 
     @Autowired
-    final Product_Repository product_repository;
+    final ProductRepository product_repository;
 
     AuthMaster authMaster;
 
-    public Cafe24_Product_Service(Cafe24_Auth_Service cafe24_auth_service, Options_Repository options_repository, Product_Repository product_repository) {
+    public Cafe24ProductService(Cafe24AuthService cafe24_auth_service, OptionsRepository options_repository, ProductRepository product_repository) {
         this.cafe24_auth_service = cafe24_auth_service;
         this.options_repository = options_repository;
         this.product_repository = product_repository;
@@ -54,14 +50,14 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
     ApiCallDto apiCallDto = new ApiCallDto();
 
     @Transactional
-    @Override
-    public void issued_Product_Item(String mallid) {
+    @Override   // 쇼핑몰 상품 수집 Service
+    public void issuedProductItem(String mallid) {
         authMaster  = cafe24_auth_service.refreshTokenIssued(mallid);
         HttpResponse<String> response = Unirest.get("https://" + mallid + ".cafe24api.com/api/v2/products/count")
-                .header("Content-Type", apiCallDto.getContent_Type())
-                .header("X-Cafe24-Api-Version", apiCallDto.getX_Cafe24_Api_Version())
+                .header("Content-Type", apiCallDto.getContentType())
+                .header("X-Cafe24-Api-Version", apiCallDto.getCafe24ApiVersion())
                 .header("'Authorization", "Bearer " + authMaster.getAccessToken())
-                .header("X-Cafe24-Client-Id", apiCallDto.getX_Cafe24_Client_Id())
+                .header("X-Cafe24-Client-Id", apiCallDto.getCafe24ClientId())
                 .asString();
 
         System.out.println(response.getBody());
@@ -93,10 +89,10 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
         for (int q = 0; q <= offsetInt;q++) {
             AuthMaster refreshTokenIssued = cafe24_auth_service.refreshTokenIssued(mallid);
             HttpResponse<String> response2 = Unirest.get("https://" + mallid + ".cafe24api.com/api/v2/products?offset=" + q + "00&limit=100")
-                    .header("Content-Type", apiCallDto.getContent_Type())
-                    .header("X-Cafe24-Api-Version", apiCallDto.getX_Cafe24_Api_Version())
+                    .header("Content-Type", apiCallDto.getContentType())
+                    .header("X-Cafe24-Api-Version", apiCallDto.getCafe24ApiVersion())
                     .header("'Authorization", "Bearer " + authMaster.getAccessToken())
-                    .header("X-Cafe24-Client-Id", apiCallDto.getX_Cafe24_Client_Id())
+                    .header("X-Cafe24-Client-Id", apiCallDto.getCafe24ClientId())
                     .asString();
 
             try {
@@ -117,10 +113,10 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
                     Thread.sleep(250);
 
                     HttpResponse<String> response3 = Unirest.get("https://" + mallid + ".cafe24api.com/api/v2/products/" + product_No_int + "/variants")
-                            .header("Content-Type", apiCallDto.getContent_Type())
-                            .header("X-Cafe24-Api-Version", apiCallDto.getX_Cafe24_Api_Version())
+                            .header("Content-Type", apiCallDto.getContentType())
+                            .header("X-Cafe24-Api-Version", apiCallDto.getCafe24ApiVersion())
                             .header("'Authorization", "Bearer " + refreshTokenIssued.getAccessToken())
-                            .header("X-Cafe24-Client-Id", apiCallDto.getX_Cafe24_Client_Id())
+                            .header("X-Cafe24-Client-Id", apiCallDto.getCafe24ClientId())
                             .asString();
 
                     Map<String, Object> variantData = gson.fromJson(response3.getBody(), new TypeToken<Map<String, Object>>() {
@@ -182,19 +178,18 @@ public class Cafe24_Product_Service implements Product_Service_Interface {
         }
     }
     @Transactional
-    @Override
-    public void upDate_Product_Qty(HashMap<String,Object> upDate_QtyData) throws ParseException {
-        authMaster  = cafe24_auth_service.refreshTokenIssued((String) upDate_QtyData.get("mall_id"));
-                System.out.println(upDate_QtyData.get("upDate_Item_List"));
-        List<HashMap<String, Object>> request_Item = (List<HashMap<String, Object>>) upDate_QtyData.get("upDate_Item_List");
-//                System.out.println(request_Item.get(0).get("request_Item"));
+    @Override //재고수량 안전재고 입력 Service
+    public void upDateProductQty(HashMap<String,Object> upDateQtyData) throws ParseException {
+        authMaster  = cafe24_auth_service.refreshTokenIssued((String) upDateQtyData.get("mall_id"));
+                System.out.println(upDateQtyData.get("upDate_Item_List"));
+        List<HashMap<String, Object>> request_Item = (List<HashMap<String, Object>>) upDateQtyData.get("upDate_Item_List");
         for (int i = 0; i < request_Item.size(); i++) {
 
-            HttpResponse<String> response = Unirest.put("https://"+upDate_QtyData.get("mall_id")+".cafe24api.com/api/v2/admin/products/"+request_Item.get(i).get("product_no")+"/variants")
-                    .header("Content-Type", apiCallDto.getInsert_Content_Type())
+            HttpResponse<String> response = Unirest.put("https://"+upDateQtyData.get("mall_id")+".cafe24api.com/api/v2/admin/products/"+request_Item.get(i).get("product_no")+"/variants")
+                    .header("Content-Type", apiCallDto.getInsertContentType())
                     .header("Authorization", "Bearer "+ authMaster.getAccessToken())
-                    .header("X-Cafe24-Api-Version", apiCallDto.getX_Cafe24_Api_Version())
-                    .header("X-Cafe24-Client-Id", apiCallDto.getX_Cafe24_Client_Id())
+                    .header("X-Cafe24-Api-Version", apiCallDto.getCafe24ApiVersion())
+                    .header("X-Cafe24-Client-Id", apiCallDto.getCafe24ClientId())
                     .body(request_Item.get(i).get("request_Item"))
                     .asString();
             log.info(response.getBody());

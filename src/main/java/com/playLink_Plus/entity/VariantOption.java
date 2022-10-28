@@ -1,6 +1,6 @@
 package com.playLink_Plus.entity;
 
-import com.playLink_Plus.identifier.Variant_Identifier;
+import com.playLink_Plus.identifier.VariantIdentifier;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor //전체 변수를 생성하는 생성자를 만들어
 @Entity //테이블과의 매핑
 @EntityListeners(AuditingEntityListener.class)
-@IdClass(Variant_Identifier.class)
+@IdClass(VariantIdentifier.class)
 public class VariantOption implements Serializable {
 
     @Id

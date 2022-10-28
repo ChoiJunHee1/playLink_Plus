@@ -2,8 +2,8 @@ package com.playLink_Plus.service.auth;
 
 import com.playLink_Plus.dto.ApiCallDto;
 import com.playLink_Plus.entity.AuthMaster;
-import com.playLink_Plus.repository.Auth_Repository;
-import com.playLink_Plus.service.Auth_Service_interface;
+import com.playLink_Plus.repository.AuthRepository;
+import com.playLink_Plus.service.AuthServiceInterface;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import lombok.extern.slf4j.Slf4j;
@@ -16,29 +16,29 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-public class Cafe24_Auth_Service implements Auth_Service_interface {
+public class Cafe24AuthService implements AuthServiceInterface {
 
     @Autowired
-    final Auth_Repository auth_repository;
+    final AuthRepository auth_repository;
 
     ApiCallDto api = new ApiCallDto();
 
     JSONParser parser = new JSONParser();
 
-    public Cafe24_Auth_Service(Auth_Repository auth_repository) {
+    public Cafe24AuthService(AuthRepository auth_repository) {
         this.auth_repository = auth_repository;
     }
 
     @Override
     @Transactional
-    public AuthMaster issued_Token(String mall_id, String code) {
+    public AuthMaster issuedToken(String mall_id, String code) {
     log.info("토큰발급시작");
         HttpResponse<String> response = Unirest.post("https://" + mall_id + ".cafe24api.com/api/v2/oauth/token")
                 .header("Authorization", api.getAuthorization())
-                .header("Content-Type", api.getContent_Type())
-                .field("grant_type", api.getGrant_type())
+                .header("Content-Type", api.getContentType())
+                .field("grant_type", api.getGrantType())
                 .field("code", code)
-                .field("redirect_uri", api.getRedirect_uri())
+                .field("redirect_uri", api.getRedirectUri())
                 .asString();
     log.info(response.getBody());
         JSONParser parser = new JSONParser();
@@ -54,7 +54,7 @@ public class Cafe24_Auth_Service implements Auth_Service_interface {
                 .mallId(tokenData.get("mall_id").toString())
                 .accessToken(tokenData.get("access_token").toString())
                 .refreshToken(tokenData.get("refresh_token").toString())
-                .refreshTokenexpiresat(tokenData.get("refresh_token_expires_at").toString())
+                .refreshTokenExpiresAt(tokenData.get("refresh_token_expires_at").toString())
                 .AuthorizationCode("Basic MGJsdkxYNFVPQnVsZWQ1Q255VHdmSTpGM0pOT0I3UER4Vm4wNEVzZlpZdVlE") // 추후 환경변수 처리해야됨
                 .build();
         System.out.println(authMaster);
@@ -68,7 +68,7 @@ public class Cafe24_Auth_Service implements Auth_Service_interface {
         AuthMaster refreshToken = auth_repository.findByMallId(mallId);
         HttpResponse<String> response = Unirest.post("https://" + refreshToken.getMallId() + ".cafe24api.com/api/v2/oauth/token")
                 .header("Authorization", api.getAuthorization())
-                .header("Content-Type", api.getContent_Type())
+                .header("Content-Type", api.getContentType())
                 .field("grant_type", "refresh_token")
                 .field("refresh_token", refreshToken.getRefreshToken())
                 .asString();
@@ -87,7 +87,7 @@ public class Cafe24_Auth_Service implements Auth_Service_interface {
                 .mallId(refreshTokenData.get("mall_id").toString())
                 .accessToken(refreshTokenData.get("access_token").toString())
                 .refreshToken(refreshTokenData.get("refresh_token").toString())
-                .refreshTokenexpiresat(refreshTokenData.get("refresh_token_expires_at").toString())
+                .refreshTokenExpiresAt(refreshTokenData.get("refresh_token_expires_at").toString())
                                 .build();
 
         auth_repository.save(refresh_List);

@@ -29,7 +29,7 @@ public class AuthMaster implements Serializable{
     @Column(insertable = true,updatable = false)
     private String systemId;
 
-    private String refreshTokenexpiresat;
+    private String refreshTokenExpiresAt;
     @Column(insertable = true,updatable = false)
     private String AuthorizationCode;
     private String accessToken;

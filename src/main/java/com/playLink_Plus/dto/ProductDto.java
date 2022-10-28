@@ -7,12 +7,12 @@ import lombok.*;
 @AllArgsConstructor
 public class ProductDto {
 
-    private String mall_id;
-    private int product_no;
-    private int shop_no;
-    private String variant_code;
-    private String use_inventory;
+    private String mallId;
+    private int productNo;
+    private int shopMo;
+    private String variantCode;
+    private String useInventory;
     private int quantity;
-    private String safety_inventory;
+    private String safetyInventory;
 
 }
