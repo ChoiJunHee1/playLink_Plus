@@ -101,8 +101,7 @@ public class Cafe24OrderService implements OrderServiceInterface {
             List<Map<String, Object>> OrderList = (List) productData.get("orders");
 
             System.out.println(OrderList.size());
-            for(int j =0; j< OrderList.size(); j++) {
-
+            for(int j =0 ; j < OrderList.size(); j++) {
 
                 HttpResponse<String> ResponsebuyerInfo = Unirest.get("https://"+orderDto.getMallId()+".cafe24api.com/api/v2/admin/orders/"+OrderList.get(j).get("order_id")+"/buyer")
                         .header("Content-Type", apiVo.getInsertContentType())
@@ -131,8 +130,7 @@ public class Cafe24OrderService implements OrderServiceInterface {
             }
 
 
-            for (int t = 0 ; t < OrderList.size(); t++){
-
+            for(int t = 0 ; t < OrderList.size(); t++){
 
                 HttpResponse<String> responseOrderItems = Unirest.get("https://"+orderDto.getMallId()+".cafe24api.com/api/v2/admin/orders/"+OrderList.get(t).get("order_id")+"/items")
                         .header("Content-Type", apiVo.getInsertContentType())
@@ -149,8 +147,7 @@ public class Cafe24OrderService implements OrderServiceInterface {
                 data.put("process_status","prepare");
                 jsonArray.add(data);
                 JSONArray array = new JSONArray();
-                for(int y = 0; y< OrderItemList.size(); y++) {
-
+                for(int y = 0; y < OrderItemList.size(); y++) {
 
                     String price_String =  OrderItemList.get(y).get("product_price").toString();
                     double price_Doeble = Double.parseDouble(price_String);
@@ -182,15 +179,17 @@ public class Cafe24OrderService implements OrderServiceInterface {
             }
 
             jsonObject.put("requests",jsonArray);
-            for (int t = 0 ; t < OrderList.size(); t++) {
-                HttpResponse<String> statusMultipleUpdate = Unirest.put("https://" + orderDto.getMallId() + ".cafe24api.com/api/v2/admin/orders/")
-                        .header("Content-Type", apiVo.getInsertContentType())
-                        .header("Authorization", "Bearer " + authMaster.getAccessToken())
-                        .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
-                        .body(jsonObject)
-                        .asString();
-                System.out.println(statusMultipleUpdate.getBody());
-            }
+            System.out.println(jsonObject);
+//            for (int t = 0 ; t < OrderList.size(); t++) {
+//                HttpResponse<String> statusMultipleUpdate = Unirest.put("https://" + orderDto.getMallId() + ".cafe24api.com/api/v2/admin/orders/")
+//                        .header("Content-Type", apiVo.getInsertContentType())
+//                        .header("Authorization", "Bearer " + authMaster.getAccessToken())
+//                        .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
+//                        .body(jsonObject)
+//                        .asString();
+//                System.out.println(statusMultipleUpdate.getBody());
+//            }
+
 
             for(int t =0; t < OrderList.size(); t++){
                 HttpResponse<String> responseReceivers = Unirest.get("https://"+orderDto.getMallId()+".cafe24api.com/api/v2/admin/orders/"+OrderList.get(t).get("order_id")+"/receivers")
@@ -217,11 +216,9 @@ public class Cafe24OrderService implements OrderServiceInterface {
             }
         }
 
-
         orderRepository.saveAll(orderMasters);
         orderItemRepository.saveAll(orderItems);
         orderReceiverRepository.saveAll(orderReceivers);
-
 
     }
 
