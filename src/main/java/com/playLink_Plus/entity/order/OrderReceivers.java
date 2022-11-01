@@ -11,7 +11,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.Id;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
@@ -20,27 +19,21 @@ import java.time.LocalDateTime;
 @AllArgsConstructor //전체 변수를 생성하는 생성자를 만들어
 @Entity //테이블과의 매핑
 @EntityListeners(AuditingEntityListener.class)
-public class OrderMaster implements Serializable {
+public class OrderReceivers {
 
     @Id
-    private String orderId; // 주문 아이디
+    private String orderId;
 
-    private String systemId; // 쇼핑몰 종류
+    private String receiversName;
 
-    private String mallId; // 쇼핑몰 아이디
+    private String receiversCellphone;
 
-    private String orderDate; //주문 일시
+    private String zipCode;
 
-    private String buyerId; // 주문자 이름  * 수취인 이름이랑 다를 수 있슴
+    private String addressFull;
 
-    private String buyerCellphone; // 주문자 핸드폰 번호
-
-    private String billingName; //결제자 이름
-
-    private String buyerName;
 
     @CreatedDate
     @Column(insertable = true,updatable = false)
     private LocalDateTime createdAt;
-
 }

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrderDto {
 
+    private String systemId;
     private String mallId;
     private String startDate;
     private String endDate;

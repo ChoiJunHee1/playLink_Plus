@@ -1,9 +1,9 @@
 package com.playLink_Plus.service.auth;
 
-import com.playLink_Plus.dto.ApiCallDto;
 import com.playLink_Plus.entity.AuthMaster;
 import com.playLink_Plus.repository.AuthRepository;
 import com.playLink_Plus.service.AuthServiceInterface;
+import com.playLink_Plus.vo.ApiVo;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +20,7 @@ public class Cafe24AuthService implements AuthServiceInterface {
 
     @Autowired
     final AuthRepository auth_repository;
-
-    ApiCallDto api = new ApiCallDto();
+    ApiVo apiVo = new ApiVo();
 
     JSONParser parser = new JSONParser();
 
@@ -34,11 +33,11 @@ public class Cafe24AuthService implements AuthServiceInterface {
     public AuthMaster issuedToken(String mall_id, String code) {
     log.info("토큰발급시작");
         HttpResponse<String> response = Unirest.post("https://" + mall_id + ".cafe24api.com/api/v2/oauth/token")
-                .header("Authorization", api.getAuthorization())
-                .header("Content-Type", api.getContentType())
-                .field("grant_type", api.getGrantType())
+                .header("Authorization", apiVo.getAuthorization())
+                .header("Content-Type", apiVo.getContentType())
+                .field("grant_type", apiVo.getGrantType())
                 .field("code", code)
-                .field("redirect_uri", api.getRedirectUri())
+                .field("redirect_uri", apiVo.getRedirectUri())
                 .asString();
     log.info(response.getBody());
         JSONParser parser = new JSONParser();
@@ -67,8 +66,8 @@ public class Cafe24AuthService implements AuthServiceInterface {
     public AuthMaster refreshTokenIssued(String mallId) {
         AuthMaster refreshToken = auth_repository.findByMallId(mallId);
         HttpResponse<String> response = Unirest.post("https://" + refreshToken.getMallId() + ".cafe24api.com/api/v2/oauth/token")
-                .header("Authorization", api.getAuthorization())
-                .header("Content-Type", api.getContentType())
+                .header("Authorization", apiVo.getAuthorization())
+                .header("Content-Type", apiVo.getContentType())
                 .field("grant_type", "refresh_token")
                 .field("refresh_token", refreshToken.getRefreshToken())
                 .asString();

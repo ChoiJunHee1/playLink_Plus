@@ -2,7 +2,6 @@ package com.playLink_Plus.service.product;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.playLink_Plus.dto.ApiCallDto;
 import com.playLink_Plus.entity.AuthMaster;
 import com.playLink_Plus.entity.ProductMaster;
 import com.playLink_Plus.entity.VariantOption;
@@ -10,8 +9,10 @@ import com.playLink_Plus.repository.OptionsRepository;
 import com.playLink_Plus.repository.ProductRepository;
 import com.playLink_Plus.service.ProductServiceInterface;
 import com.playLink_Plus.service.auth.Cafe24AuthService;
+import com.playLink_Plus.vo.ApiVo;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -28,36 +29,29 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class Cafe24ProductService implements ProductServiceInterface {
-    @Autowired
    final Cafe24AuthService cafe24_auth_service;
 
-    @Autowired
    final OptionsRepository options_repository;
 
-    @Autowired
     final ProductRepository product_repository;
 
     AuthMaster authMaster;
 
-    public Cafe24ProductService(Cafe24AuthService cafe24_auth_service, OptionsRepository options_repository, ProductRepository product_repository) {
-        this.cafe24_auth_service = cafe24_auth_service;
-        this.options_repository = options_repository;
-        this.product_repository = product_repository;
-    }
-
     ProductMaster productMaster;
-    ApiCallDto apiCallDto = new ApiCallDto();
+
+    ApiVo apiVo = new ApiVo();
 
     @Transactional
     @Override   // 쇼핑몰 상품 수집 Service
     public void issuedProductItem(String mallid) {
         authMaster  = cafe24_auth_service.refreshTokenIssued(mallid);
         HttpResponse<String> response = Unirest.get("https://" + mallid + ".cafe24api.com/api/v2/products/count")
-                .header("Content-Type", apiCallDto.getContentType())
-                .header("X-Cafe24-Api-Version", apiCallDto.getCafe24ApiVersion())
+                .header("Content-Type", apiVo.getContentType())
+                .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
                 .header("'Authorization", "Bearer " + authMaster.getAccessToken())
-                .header("X-Cafe24-Client-Id", apiCallDto.getCafe24ClientId())
+                .header("X-Cafe24-Client-Id", apiVo.getCafe24ClientId())
                 .asString();
 
         System.out.println(response.getBody());
@@ -89,10 +83,10 @@ public class Cafe24ProductService implements ProductServiceInterface {
         for (int q = 0; q <= offsetInt;q++) {
             AuthMaster refreshTokenIssued = cafe24_auth_service.refreshTokenIssued(mallid);
             HttpResponse<String> response2 = Unirest.get("https://" + mallid + ".cafe24api.com/api/v2/products?offset=" + q + "00&limit=100")
-                    .header("Content-Type", apiCallDto.getContentType())
-                    .header("X-Cafe24-Api-Version", apiCallDto.getCafe24ApiVersion())
+                    .header("Content-Type", apiVo.getContentType())
+                    .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
                     .header("'Authorization", "Bearer " + authMaster.getAccessToken())
-                    .header("X-Cafe24-Client-Id", apiCallDto.getCafe24ClientId())
+                    .header("X-Cafe24-Client-Id", apiVo.getCafe24ClientId())
                     .asString();
 
             try {
@@ -113,10 +107,10 @@ public class Cafe24ProductService implements ProductServiceInterface {
                     Thread.sleep(250);
 
                     HttpResponse<String> response3 = Unirest.get("https://" + mallid + ".cafe24api.com/api/v2/products/" + product_No_int + "/variants")
-                            .header("Content-Type", apiCallDto.getContentType())
-                            .header("X-Cafe24-Api-Version", apiCallDto.getCafe24ApiVersion())
+                            .header("Content-Type", apiVo.getContentType())
+                            .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
                             .header("'Authorization", "Bearer " + refreshTokenIssued.getAccessToken())
-                            .header("X-Cafe24-Client-Id", apiCallDto.getCafe24ClientId())
+                            .header("X-Cafe24-Client-Id", apiVo.getCafe24ClientId())
                             .asString();
 
                     Map<String, Object> variantData = gson.fromJson(response3.getBody(), new TypeToken<Map<String, Object>>() {
@@ -186,10 +180,10 @@ public class Cafe24ProductService implements ProductServiceInterface {
         for (int i = 0; i < request_Item.size(); i++) {
 
             HttpResponse<String> response = Unirest.put("https://"+upDateQtyData.get("mall_id")+".cafe24api.com/api/v2/admin/products/"+request_Item.get(i).get("product_no")+"/variants")
-                    .header("Content-Type", apiCallDto.getInsertContentType())
+                    .header("Content-Type", apiVo.getInsertContentType())
                     .header("Authorization", "Bearer "+ authMaster.getAccessToken())
-                    .header("X-Cafe24-Api-Version", apiCallDto.getCafe24ApiVersion())
-                    .header("X-Cafe24-Client-Id", apiCallDto.getCafe24ClientId())
+                    .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
+                    .header("X-Cafe24-Client-Id", apiVo.getCafe24ClientId())
                     .body(request_Item.get(i).get("request_Item"))
                     .asString();
             log.info(response.getBody());
