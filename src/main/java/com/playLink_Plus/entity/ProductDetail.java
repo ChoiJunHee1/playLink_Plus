@@ -20,27 +20,30 @@ import java.time.LocalDateTime;
 @Entity //테이블과의 매핑
 @EntityListeners(AuditingEntityListener.class)
 @IdClass(VariantIdentifier.class)
-public class VariantOption implements Serializable {
+public class ProductDetail implements Serializable {
 
     @Id
     private String mallId;
-    @Id
-    private String variantCode;
-    private String optionName;
-    private String optionValue;
-    @CreatedDate
-    @Column(insertable = true,updatable = false)
-    private LocalDateTime createdAt;
 
     @Id
-    private String optionKey;
+    private String variantCode;
+
+    @Id
+    private String optionName;
+
+    private String optionValue;
+
+    @CreatedDate
+    @Column(insertable = true, updatable = false)
+    private LocalDateTime createdAt;
+
+
     @Id
     private String systemId;
 
     @LastModifiedDate
-    @Column(insertable = false,updatable = true)
+    @Column(insertable = false, updatable = true)
     private LocalDateTime updateAt;
-
 
 
 }

@@ -31,7 +31,7 @@ public class Cafe24AuthService implements AuthServiceInterface {
     @Override
     @Transactional
     public AuthMaster issuedToken(String mall_id, String code) {
-    log.info("토큰발급시작");
+        log.info("토큰발급시작");
         HttpResponse<String> response = Unirest.post("https://" + mall_id + ".cafe24api.com/api/v2/oauth/token")
                 .header("Authorization", apiVo.getAuthorization())
                 .header("Content-Type", apiVo.getContentType())
@@ -39,7 +39,7 @@ public class Cafe24AuthService implements AuthServiceInterface {
                 .field("code", code)
                 .field("redirect_uri", apiVo.getRedirectUri())
                 .asString();
-    log.info(response.getBody());
+        log.info(response.getBody());
         JSONParser parser = new JSONParser();
         JSONObject tokenData = new JSONObject();
         try {
@@ -73,7 +73,8 @@ public class Cafe24AuthService implements AuthServiceInterface {
                 .asString();
 
         JSONParser parser = new JSONParser();
-        JSONObject refreshTokenData = new JSONObject();;
+        JSONObject refreshTokenData = new JSONObject();
+        ;
         try {
 
             refreshTokenData = (JSONObject) parser.parse(response.getBody());
@@ -87,7 +88,7 @@ public class Cafe24AuthService implements AuthServiceInterface {
                 .accessToken(refreshTokenData.get("access_token").toString())
                 .refreshToken(refreshTokenData.get("refresh_token").toString())
                 .refreshTokenExpiresAt(refreshTokenData.get("refresh_token_expires_at").toString())
-                                .build();
+                .build();
 
         auth_repository.save(refresh_List);
 

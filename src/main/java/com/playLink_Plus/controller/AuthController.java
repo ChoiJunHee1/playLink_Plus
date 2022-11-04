@@ -29,14 +29,14 @@ public class AuthController {
     final OptionsRepository optionsRepository;
     final Cafe24AuthService cafe24AuthService;
     private String insertMallId;
-     AuthServiceInterface authService = null;
+    AuthServiceInterface authService = null;
 
-     ProductServiceInterface productService = null ;
+    ProductServiceInterface productService = null;
 
     @GetMapping("/authCode")
-    public RedirectView issuedAuthCode (@RequestParam("mall_id") String mallId) {
+    public RedirectView issuedAuthCode(@RequestParam("mall_id") String mallId) {
         //나중에 환경 변수로 뺴야됨
-       String path = "https://"+mallId+".cafe24.com/api/v2/oauth/authorize?response_type=code&client_id=0blvLX4UOBuled5CnyTwfI&" +
+        String path = "https://" + mallId + ".cafe24.com/api/v2/oauth/authorize?response_type=code&client_id=0blvLX4UOBuled5CnyTwfI&" +
                 "state=app_install&redirect_uri=https://playlink-plus.xmd.co.kr/auth/issuedToken" +
                 "&scope=mall.read_Category,mall.write_Category,mall.read_Product,mall.write_Product,mall.read_Collection,mall.write_Collection,mall.read_Supply," +
                 "mall.write_Supply,mall.read_Order,mall.write_Order,mall.read_Customer,mall.write_Customer,mall.read_Promotion,mall.write_Promotion";
@@ -45,11 +45,11 @@ public class AuthController {
         insertMallId = mallId;
         redirectView.setUrl(path);
 
-    return  redirectView;
+        return redirectView;
     }
 
     @RequestMapping("/issuedToken")
-    public String issued_access_token(@RequestParam("code") String code ){
+    public String issued_access_token(@RequestParam("code") String code) {
 
 
         authService = new Cafe24AuthService(authRepository);
@@ -57,8 +57,8 @@ public class AuthController {
         productService = new Cafe24ProductService(cafe24AuthService, optionsRepository, productRepository);
         try {
             authMaster = authService.issuedToken(insertMallId, code);
-        }catch (Exception e){
-            log.error("인증 토큰 발급 진행중 오류가 발생 하였습니다."+e.getMessage());
+        } catch (Exception e) {
+            log.error("인증 토큰 발급 진행중 오류가 발생 하였습니다." + e.getMessage());
         }
 
         return "onlineMallGuide";
@@ -80,5 +80,6 @@ public class AuthController {
 //
 //        return "onlineMallGuide";
 //    }
+
 
 }

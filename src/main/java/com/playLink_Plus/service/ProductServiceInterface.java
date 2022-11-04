@@ -13,6 +13,10 @@ public interface ProductServiceInterface {
     void issuedProductItem(String mall_id);
 
     @Autowired
-    void upDateProductQty(HashMap<String,Object> upDate_QtyData ) throws ParseException;
+    void upDateProductQty(HashMap<String, Object> upDate_QtyData) throws ParseException;
 
+
+    void insertProductTest();
+
+    String makeProductDataXml();
 }

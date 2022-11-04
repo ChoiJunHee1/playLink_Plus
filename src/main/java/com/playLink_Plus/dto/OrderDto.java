@@ -1,5 +1,6 @@
 package com.playLink_Plus.dto;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

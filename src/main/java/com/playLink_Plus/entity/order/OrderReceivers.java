@@ -34,6 +34,6 @@ public class OrderReceivers {
 
 
     @CreatedDate
-    @Column(insertable = true,updatable = false)
+    @Column(insertable = true, updatable = false)
     private LocalDateTime createdAt;
 }

@@ -44,6 +44,6 @@ public class OrderItem implements Serializable {
 
     private String statusCode;
     @CreatedDate
-    @Column(insertable = true,updatable = false)
+    @Column(insertable = true, updatable = false)
     private LocalDateTime createdAt;
 }

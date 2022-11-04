@@ -28,18 +28,19 @@ public class ProductMaster implements Serializable {
     private String systemId;
 
     private String productName;
+
     private String productCode;
+
     private String variantCode;
+
     private int optionQty;
-    @Column(insertable = true,updatable = false)
-    private int productNo;
 
     @CreatedDate
-    @Column(insertable = true,updatable = false)
+    @Column(insertable = true, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(insertable = false,updatable = true)
+    @Column(insertable = false, updatable = true)
     private LocalDateTime updateAt;
 
 

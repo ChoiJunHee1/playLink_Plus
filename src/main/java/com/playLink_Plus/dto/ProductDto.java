@@ -1,5 +1,7 @@
 package com.playLink_Plus.dto;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import lombok.*;
 
 @Data
@@ -14,5 +16,6 @@ public class ProductDto {
     private String useInventory;
     private int quantity;
     private String safetyInventory;
+
 
 }

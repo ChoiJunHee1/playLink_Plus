@@ -27,14 +27,14 @@ public class OrderController {
     OrderServiceInterface orderService = null;
 
     @PostMapping("issuedOrder")
-    public void issuedOrder (@RequestBody OrderDto orderDto){
+    public void issuedOrder(@RequestBody OrderDto orderDto) {
 
         if (orderDto.getSystemId().equals("cafe24")) {
 
-            orderService = new Cafe24OrderService(cafe24_auth_service, orderItemRepository, orderRepository,orderReceiverRepository);
+            orderService = new Cafe24OrderService(cafe24_auth_service, orderItemRepository, orderRepository, orderReceiverRepository);
             orderService.issuedOrder(orderDto);
 
-        }else {
+        } else {
             System.out.println("없는 systemId");
         }
 

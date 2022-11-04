@@ -13,6 +13,6 @@ public class VariantIdentifier implements Serializable{
     private String mallId;
     private String systemId;
     private String variantCode;
-    private String optionKey;
+    private String optionName;
 
 }

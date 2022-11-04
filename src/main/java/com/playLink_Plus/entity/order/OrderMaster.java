@@ -40,7 +40,7 @@ public class OrderMaster implements Serializable {
     private String buyerName;
 
     @CreatedDate
-    @Column(insertable = true,updatable = false)
+    @Column(insertable = true, updatable = false)
     private LocalDateTime createdAt;
 
 }
