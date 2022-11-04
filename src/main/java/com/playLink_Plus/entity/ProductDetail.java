@@ -33,6 +33,11 @@ public class ProductDetail implements Serializable {
 
     private String optionValue;
 
+
+    private String createdDate;
+
+    private String updated_date;
+
     @CreatedDate
     @Column(insertable = true, updatable = false)
     private LocalDateTime createdAt;

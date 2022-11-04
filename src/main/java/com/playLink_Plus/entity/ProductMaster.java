@@ -35,6 +35,10 @@ public class ProductMaster implements Serializable {
 
     private int optionQty;
 
+    private int productNo;
+
+    private String createdDate;
+
     @CreatedDate
     @Column(insertable = true, updatable = false)
     private LocalDateTime createdAt;

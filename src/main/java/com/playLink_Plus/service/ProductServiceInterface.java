@@ -10,7 +10,9 @@ import java.util.HashMap;
 public interface ProductServiceInterface {
 
     @Autowired
-    void issuedProductItem(String mall_id);
+    void issuedProductItem(HashMap<String, Object> mall_id);
+
+    void checkProductInfo(HashMap<String, Object> reqData);
 
     @Autowired
     void upDateProductQty(HashMap<String, Object> upDate_QtyData) throws ParseException;

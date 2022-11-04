@@ -41,11 +41,11 @@ public class GodomallProductService implements ProductServiceInterface {
 
     @Transactional
     @Override
-    public void issuedProductItem(String mall_id) {
+    public void issuedProductItem(HashMap<String, Object> reqData) {
 
         List<ProductMaster> products = new ArrayList<>();
         List<ProductDetail> variantOptions = new ArrayList<>();
-        authMaster = authRepository.findByMallId(mall_id);
+        authMaster = authRepository.findByMallId((String) reqData.get("mallId"));
 
         HttpResponse<String> response = Unirest.post
                         ("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key=" + authMaster.getAuthorizationCode() + "&key=" + authMaster.getAccessToken() + "&size=100")
@@ -53,16 +53,17 @@ public class GodomallProductService implements ProductServiceInterface {
 
         JSONObject header = XML.toJSONObject(response.getBody());
         String jsonheader = header.toString(4);
+
         Map<String, Object> productPage = gson.fromJson(jsonheader, new TypeToken<Map<String, Object>>() {
         }.getType());
         Map<String, Object> reqPageData = (Map<String, Object>) productPage.get("data");
         Map<String, Object> maxPage = (Map<String, Object>) reqPageData.get("header");
         String maxPageStr = (String) maxPage.get("max_page");
         int max_page = Integer.parseInt(maxPageStr);
-
         for (int i = 1; i <= max_page; i++) {
             HttpResponse<String> responseProductInfo = Unirest.post
-                            ("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key=" + authMaster.getAuthorizationCode() + "&key=" + authMaster.getAccessToken() + "&size=100&page=" + i)
+                            ("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key=" + authMaster.getAuthorizationCode()
+                                    + "&key=" + authMaster.getAccessToken() + "&size=100&page=" + i)
                     .asString();
 
             JSONObject jsonObject = XML.toJSONObject(responseProductInfo.getBody());
@@ -70,9 +71,8 @@ public class GodomallProductService implements ProductServiceInterface {
             String jsonStr = jsonObject.toString(4);
             Map<String, Object> productData = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
             }.getType());
-            Map<String, Object> reqData = (Map<String, Object>) productData.get("data");
-            Map<String, Object> returnData = (Map<String, Object>) reqData.get("return");
-
+            Map<String, Object> requestData = (Map<String, Object>) productData.get("data");
+            Map<String, Object> returnData = (Map<String, Object>) requestData.get("return");
             List<Map<String, Object>> goodsData = (List<Map<String, Object>>) returnData.get("goods_data");
 
                 for (int j = 0; j < goodsData.size(); j++) {
@@ -84,7 +84,7 @@ public class GodomallProductService implements ProductServiceInterface {
                             double sno = (double) optionData.get(l).get("sno");
                             int snoInt = (int) sno;
                             ProductMaster product_List = ProductMaster.builder()
-                                    .mallId(mall_id)
+                                    .mallId((String) reqData.get("mallId"))
                                     .productCode(String.valueOf(goodsNoInt))
                                     .productName((String) goodsData.get(j).get("goodsNm"))
                                     .variantCode(String.valueOf(snoInt))
@@ -97,11 +97,12 @@ public class GodomallProductService implements ProductServiceInterface {
                             products.add(product_List);
                             for(int t = 0; t < option.length; t ++){
                                 ProductDetail variantOption = ProductDetail.builder()
-                                        .mallId(mall_id)
+                                        .mallId((String) reqData.get("mallId"))
                                         .variantCode(String.valueOf(snoInt))
                                         .optionName(option[t])
                                         .optionValue((String) optionData.get(l).get("optionValue"+(t+1)))
                                         .systemId("godoMall")
+                                        .createdDate((String) optionData.get(i).get("regDt"))
                                         .build();
                                 variantOptions.add(variantOption);
                             }
@@ -115,8 +116,11 @@ public class GodomallProductService implements ProductServiceInterface {
           productRepository.saveAll(products);
           optionsRepository.saveAll(variantOptions);
     }
+    @Transactional
+    @Override
+    public void checkProductInfo(HashMap<String, Object> reqData){
 
-
+    }
 
     @Override
     public void upDateProductQty(HashMap<String, Object> upDate_QtyData) throws ParseException {
