@@ -169,7 +169,7 @@ public class GodomallProductService implements ProductServiceInterface {
             XmlMapper xmlMapper = new XmlMapper();
             xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
             xmlMapper.writeValue(sw, res);
-
+            System.out.println("뀨");
 
         } catch (Exception e) {
 
