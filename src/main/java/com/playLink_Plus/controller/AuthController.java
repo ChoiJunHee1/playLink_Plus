@@ -2,7 +2,7 @@ package com.playLink_Plus.controller;
 
 import com.playLink_Plus.entity.AuthMaster;
 import com.playLink_Plus.repository.AuthRepository;
-import com.playLink_Plus.repository.OptionsRepository;
+import com.playLink_Plus.repository.ProductDetailRepository;
 import com.playLink_Plus.repository.ProductRepository;
 import com.playLink_Plus.service.AuthServiceInterface;
 import com.playLink_Plus.service.ProductServiceInterface;
@@ -26,7 +26,7 @@ public class AuthController {
     AuthMaster authMaster;
     final AuthRepository authRepository;
     final ProductRepository productRepository;
-    final OptionsRepository optionsRepository;
+    final ProductDetailRepository productDetailRepository;
     final Cafe24AuthService cafe24AuthService;
     private String insertMallId;
     AuthServiceInterface authService = null;
@@ -54,7 +54,7 @@ public class AuthController {
 
         authService = new Cafe24AuthService(authRepository);
 
-        productService = new Cafe24ProductService(cafe24AuthService, optionsRepository, productRepository);
+        productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
         try {
             authMaster = authService.issuedToken(insertMallId, code);
         } catch (Exception e) {

@@ -11,7 +11,7 @@ import com.playLink_Plus.entity.AuthMaster;
 import com.playLink_Plus.entity.ProductMaster;
 import com.playLink_Plus.entity.ProductDetail;
 import com.playLink_Plus.repository.AuthRepository;
-import com.playLink_Plus.repository.OptionsRepository;
+import com.playLink_Plus.repository.ProductDetailRepository;
 import com.playLink_Plus.repository.ProductRepository;
 import com.playLink_Plus.service.ProductServiceInterface;
 import kong.unirest.HttpResponse;
@@ -35,20 +35,22 @@ public class GodomallProductService implements ProductServiceInterface {
     AuthMaster authMaster;
     final AuthRepository authRepository;
     final ProductRepository productRepository;
-    final OptionsRepository optionsRepository;
+    final ProductDetailRepository productDetailRepository;
     ProductMaster productMaster;
     Gson gson = new Gson();
-
+    List<ProductMaster> products = new ArrayList<>();
+    List<ProductMaster> productsOptionNull = new ArrayList<>();
+    List<ProductDetail> variantOptions = new ArrayList<>();
     @Transactional
     @Override
     public void issuedProductItem(HashMap<String, Object> reqData) {
 
-        List<ProductMaster> products = new ArrayList<>();
-        List<ProductDetail> variantOptions = new ArrayList<>();
+
         authMaster = authRepository.findByMallId((String) reqData.get("mallId"));
 
         HttpResponse<String> response = Unirest.post
-                        ("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key=" + authMaster.getAuthorizationCode() + "&key=" + authMaster.getAccessToken() + "&size=100")
+                        ("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key="
+                                + authMaster.getAuthorizationCode() + "&key=" + authMaster.getAccessToken() + "&size=100")
                 .asString();
 
         JSONObject header = XML.toJSONObject(response.getBody());
@@ -60,65 +62,172 @@ public class GodomallProductService implements ProductServiceInterface {
         Map<String, Object> maxPage = (Map<String, Object>) reqPageData.get("header");
         String maxPageStr = (String) maxPage.get("max_page");
         int max_page = Integer.parseInt(maxPageStr);
-        for (int i = 1; i <= max_page; i++) {
+        for (int i = 0; i < max_page; i++) {
             HttpResponse<String> responseProductInfo = Unirest.post
                             ("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key=" + authMaster.getAuthorizationCode()
                                     + "&key=" + authMaster.getAccessToken() + "&size=100&page=" + i)
                     .asString();
 
             JSONObject jsonObject = XML.toJSONObject(responseProductInfo.getBody());
-            System.out.println(jsonObject);
+//            System.out.println(jsonObject);
             String jsonStr = jsonObject.toString(4);
             Map<String, Object> productData = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
             }.getType());
             Map<String, Object> requestData = (Map<String, Object>) productData.get("data");
             Map<String, Object> returnData = (Map<String, Object>) requestData.get("return");
+
+
             List<Map<String, Object>> goodsData = (List<Map<String, Object>>) returnData.get("goods_data");
 
                 for (int j = 0; j < goodsData.size(); j++) {
-                    List<Map<String, Object>> optionData = (List<Map<String, Object>>) goodsData.get(j).get("optionData");
-                    if (optionData.size() != 0) {
+//                    System.out.println(goodsData);
+                    double goodsNo = (double) goodsData.get(j).get("goodsNo");
+                    int goodsNoInt = (int) goodsNo;
+                    if(goodsData.get(j).get("optionFl").equals("y")) {
+                        List<Map<String, Object>> optionData = (List<Map<String, Object>>) goodsData.get(j).get("optionData");
+
                         for (int l = 0; l < optionData.size(); l++) {
-                            double goodsNo = (double) optionData.get(l).get("goodsNo");
-                            int goodsNoInt = (int) goodsNo;
+
                             double sno = (double) optionData.get(l).get("sno");
                             int snoInt = (int) sno;
+
                             ProductMaster product_List = ProductMaster.builder()
                                     .mallId((String) reqData.get("mallId"))
                                     .productCode(String.valueOf(goodsNoInt))
                                     .productName((String) goodsData.get(j).get("goodsNm"))
-                                    .variantCode(String.valueOf(snoInt))
                                     .systemId("godoMall")
+                                    .option_yn((String) goodsData.get(j).get("optionFl"))
                                     .optionQty(optionData.size()).build();
 
                             String str = goodsData.get(j).get("optionName").toString();
-                            String [] option = str.split("\\^\\|\\^");
+                            String[] option = str.split("\\^\\|\\^");
 
                             products.add(product_List);
-                            for(int t = 0; t < option.length; t ++){
+                            for (int t = 0; t < option.length; t++) {
                                 ProductDetail variantOption = ProductDetail.builder()
                                         .mallId((String) reqData.get("mallId"))
+                                        .systemId("godoMall")
                                         .variantCode(String.valueOf(snoInt))
                                         .optionName(option[t])
-                                        .optionValue((String) optionData.get(l).get("optionValue"+(t+1)))
-                                        .systemId("godoMall")
-                                        .createdDate((String) optionData.get(i).get("regDt"))
+                                        .productCode(String.valueOf(goodsNoInt))
+                                        .optionNum(t)
+                                        .optionValue((String) optionData.get(l).get("optionValue" + (t + 1)))
+                                        .createdDate((String) optionData.get(l).get("regDt"))
                                         .build();
                                 variantOptions.add(variantOption);
                             }
                         }
-                    } else{
-                        //  ** 옵션 없는 상품 로직 자리  **
+                    }else {
+
+                        ProductMaster product_List = ProductMaster.builder()
+                                .mallId((String) reqData.get("mallId"))
+                                .productCode(String.valueOf(goodsNoInt))
+                                .productName((String) goodsData.get(j).get("goodsNm"))
+                                .systemId("godoMall")
+                                .option_yn((String) goodsData.get(j).get("optionFl"))
+                                .productCode(String.valueOf(goodsNoInt))
+                                .optionQty(0).build();
+                        productsOptionNull.add(product_List);
+
                     }
                 }
-
         }
+          productRepository.saveAll(productsOptionNull);
           productRepository.saveAll(products);
-          optionsRepository.saveAll(variantOptions);
+          productDetailRepository.saveAll(variantOptions);
     }
     @Transactional
     @Override
     public void checkProductInfo(HashMap<String, Object> reqData){
+
+            authMaster = authRepository.findByMallId((String) reqData.get("mallId"));
+
+            HttpResponse<String> response = Unirest.post
+                            ("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key="
+                                    + authMaster.getAuthorizationCode() + "&key=" + authMaster.getAccessToken() + "&size=100&searchDateType=regDt&startDate="+reqData.get("startDate")+"&"+"endDate+="+reqData.get("endDate"))
+                    .asString();
+
+            JSONObject header = XML.toJSONObject(response.getBody());
+            String jsonheader = header.toString(4);
+
+            Map<String, Object> productPage = gson.fromJson(jsonheader, new TypeToken<Map<String, Object>>() {
+            }.getType());
+            Map<String, Object> reqPageData = (Map<String, Object>) productPage.get("data");
+            Map<String, Object> maxPage = (Map<String, Object>) reqPageData.get("header");
+            String maxPageStr = (String) maxPage.get("max_page");
+            int max_page = Integer.parseInt(maxPageStr);
+            for (int i = 0; i < max_page; i++) {
+                HttpResponse<String> responseProductInfo = Unirest.post
+                                ("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key=" + authMaster.getAuthorizationCode()
+                                        + "&key=" + authMaster.getAccessToken() + "&size=100&page=" + i+"&searchDateType=regDt&startDate="+reqData.get("startDate")+"&"+"endDate="+reqData.get("endDate"))
+                        .asString();
+
+                JSONObject jsonObject = XML.toJSONObject(responseProductInfo.getBody());
+            System.out.println(jsonObject);
+                String jsonStr = jsonObject.toString(4);
+                Map<String, Object> productData = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
+                }.getType());
+                Map<String, Object> requestData = (Map<String, Object>) productData.get("data");
+                Map<String, Object> returnData = (Map<String, Object>) requestData.get("return");
+
+
+                List<Map<String, Object>> goodsData = (List<Map<String, Object>>) returnData.get("goods_data");
+
+                for (int j = 0; j < goodsData.size(); j++) {
+
+                    double goodsNo = (double) goodsData.get(j).get("goodsNo");
+                    int goodsNoInt = (int) goodsNo;
+
+                    if(goodsData.get(j).get("optionFl").equals("y")) {
+                        List<Map<String, Object>> optionData = (List<Map<String, Object>>) goodsData.get(j).get("optionData");
+                        for (int l = 0; l < optionData.size(); l++) {
+                            double sno = (double) optionData.get(l).get("sno");
+                            int snoInt = (int) sno;
+
+                            ProductMaster product_List = ProductMaster.builder()
+                                    .mallId((String) reqData.get("mallId"))
+                                    .productCode(String.valueOf(goodsNoInt))
+                                    .productName((String) goodsData.get(j).get("goodsNm"))
+                                    .systemId("godoMall")
+                                    .option_yn((String) goodsData.get(j).get("optionFl"))
+                                    .optionQty(optionData.size()).build();
+
+                            String str = goodsData.get(j).get("optionName").toString();
+                            String[] option = str.split("\\^\\|\\^");
+
+                            products.add(product_List);
+                            for (int t = 0; t < option.length; t++) {
+                                ProductDetail variantOption = ProductDetail.builder()
+                                        .mallId((String) reqData.get("mallId"))
+                                        .systemId("godoMall")
+                                        .variantCode(String.valueOf(snoInt))
+                                        .optionName(option[t])
+                                        .productCode(String.valueOf(goodsNoInt))
+                                        .optionNum(t)
+                                        .optionValue((String) optionData.get(l).get("optionValue" + (t + 1)))
+                                        .createdDate((String) optionData.get(l).get("regDt"))
+                                        .build();
+                                variantOptions.add(variantOption);
+                            }
+                        }
+                    }else {
+
+                        ProductMaster product_List = ProductMaster.builder()
+                                .mallId((String) reqData.get("mallId"))
+                                .productCode(String.valueOf(goodsNoInt))
+                                .productName((String) goodsData.get(j).get("goodsNm"))
+                                .systemId("godoMall")
+                                .option_yn((String) goodsData.get(j).get("optionFl"))
+                                .optionQty(0).build();
+                        productsOptionNull.add(product_List);
+
+                    }
+                }
+            }
+            productRepository.saveAll(productsOptionNull);
+            productRepository.saveAll(products);
+            productDetailRepository.saveAll(variantOptions);
+
 
     }
 

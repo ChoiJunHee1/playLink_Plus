@@ -3,7 +3,7 @@ package com.playLink_Plus.controller;
 import com.playLink_Plus.dto.ProductDto;
 import com.playLink_Plus.entity.AuthMaster;
 import com.playLink_Plus.repository.AuthRepository;
-import com.playLink_Plus.repository.OptionsRepository;
+import com.playLink_Plus.repository.ProductDetailRepository;
 import com.playLink_Plus.repository.ProductRepository;
 import com.playLink_Plus.service.AuthServiceInterface;
 import com.playLink_Plus.service.ProductServiceInterface;
@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -28,7 +27,7 @@ public class ProductController {
     AuthMaster authMaster;
     final AuthRepository authRepository;
     final Cafe24AuthService cafe24AuthService;
-    final OptionsRepository optionsRepository;
+    final ProductDetailRepository productDetailRepository;
     final ProductRepository productRepository;
     ProductServiceInterface productService = null;
     AuthServiceInterface auth_service = null;
@@ -41,20 +40,21 @@ public class ProductController {
         System.out.println(reqData.get("systemId"));
 
             if (reqData.get("systemId").equals("cafe24")) {
-                productService = new Cafe24ProductService(cafe24AuthService, optionsRepository, productRepository);
+                productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
             } else if (reqData.get("systemId").equals("godomall")) {
-                productService = new GodomallProductService(authRepository,productRepository,optionsRepository);
+                productService = new GodomallProductService(authRepository,productRepository, productDetailRepository);
             }
             productService.issuedProductItem(reqData);
     }
 
-    @PostMapping("/responseProductInfo")
+    @GetMapping("/createProductInfo")
     public void responseProductInfo(@RequestBody HashMap<String, Object> reqData){
 
+        System.out.println(reqData);
         if (reqData.get("systemId").equals("cafe24")) {
-            productService = new Cafe24ProductService(cafe24AuthService, optionsRepository, productRepository);
+            productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
         } else if (reqData.get("systemId").equals("godomall")) {
-            productService = new GodomallProductService(authRepository,productRepository,optionsRepository);
+            productService = new GodomallProductService(authRepository,productRepository, productDetailRepository);
         }
         productService.checkProductInfo(reqData);
     }
@@ -63,7 +63,7 @@ public class ProductController {
     @PostMapping("/UpDateProductQty")
     public void upDateProduct_Qty(@RequestBody HashMap<String, Object> upDateQtyData) throws ParseException {
 
-        productService = new Cafe24ProductService(cafe24AuthService, optionsRepository, productRepository);
+        productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
         productService.upDateProductQty(upDateQtyData);
 
     }
@@ -72,7 +72,7 @@ public class ProductController {
     public void insertProductTest() {
 
         System.out.println("뀨?");
-        productService = new GodomallProductService(authRepository,productRepository,optionsRepository);
+        productService = new GodomallProductService(authRepository,productRepository, productDetailRepository);
         productService.insertProductTest();
 
     }
@@ -80,7 +80,7 @@ public class ProductController {
 
     @GetMapping(path = "/makeProductDataXml", produces = MediaType.APPLICATION_XML_VALUE)
     public String makeProductDataXml() {
-        productService = new GodomallProductService(authRepository,productRepository,optionsRepository);
+        productService = new GodomallProductService(authRepository,productRepository, productDetailRepository);
 
         return productService.makeProductDataXml();
     }

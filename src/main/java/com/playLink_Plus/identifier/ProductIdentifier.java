@@ -12,6 +12,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class ProductIdentifier implements Serializable {
     private String mallId;
-    private String variantCode;
     private String systemId;
+    private String productCode;
 }

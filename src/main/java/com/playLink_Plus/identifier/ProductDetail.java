@@ -9,10 +9,10 @@ import lombok.Data;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class VariantIdentifier implements Serializable{
+public class ProductDetail implements Serializable{
     private String mallId;
     private String systemId;
     private String variantCode;
-    private String optionName;
-
+    private String productCode;
+    private int optionNum;
 }

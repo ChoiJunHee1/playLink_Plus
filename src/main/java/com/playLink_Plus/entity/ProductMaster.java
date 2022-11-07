@@ -28,12 +28,12 @@ public class ProductMaster implements Serializable {
     private String systemId;
 
     private String productName;
-
+    @Id
     private String productCode;
 
-    private String variantCode;
-
     private int optionQty;
+
+    private String option_yn;
 
     private int productNo;
 
