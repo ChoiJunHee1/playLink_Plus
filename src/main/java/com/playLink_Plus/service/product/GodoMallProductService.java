@@ -41,9 +41,7 @@ public class GodoMallProductService implements ProductServiceInterface {
     final ProductDetailRepository productDetailRepository;
     ProductMaster productMaster;
     Gson gson = new Gson();
-    List<ProductMaster> products = new ArrayList<>();
-    List<ProductMaster> productsOptionNull = new ArrayList<>();
-    List<ProductDetail> variantOptions = new ArrayList<>();
+
     ArrayList<String> urlVariable = new ArrayList<>();
 
     private HttpResponse<String> godoMallApiUrl(HashMap<String, Object> reqData, ArrayList<String> urlVariable) {
@@ -69,9 +67,6 @@ public class GodoMallProductService implements ProductServiceInterface {
 
         }
         try {
-            System.out.println("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key="
-                    + authMaster.getAuthorizationCode() + "&key=" + authMaster.getAccessToken() + ApiUrl);
-
             response = Unirest.post
                             ("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key="
                                     + authMaster.getAuthorizationCode() + "&key=" + authMaster.getAccessToken() + ApiUrl)
@@ -94,7 +89,9 @@ public class GodoMallProductService implements ProductServiceInterface {
     @Transactional
     @Override
     public void issuedProductItem(HashMap<String, Object> reqData) {
-
+        List<ProductMaster> products = new ArrayList<>();
+        List<ProductMaster> productsOptionNull = new ArrayList<>();
+        List<ProductDetail> variantOptions = new ArrayList<>();
 
         urlVariable.add("size");
         HttpResponse<String> responseMaxPage = godoMallApiUrl(reqData, urlVariable);
@@ -154,9 +151,6 @@ public class GodoMallProductService implements ProductServiceInterface {
                                     .optionNum(t)
                                     .optionValue((String) optionData.get(l).get("optionValue" + (t + 1)))
                                     .createdDate((String) optionData.get(l).get("regDt"))
-//                                    .optionPrice((Integer) optionData.get(l).get("optionPrice"))
-//                                    .optionViewFl((String) optionData.get(l).get("optionViewFl"))
-//                                    .optionSellFl((String) optionData.get(l).get("optionSellFl"))
                                     .build();
                             variantOptions.add(variantOption);
                         }
@@ -213,9 +207,6 @@ public class GodoMallProductService implements ProductServiceInterface {
                                         .optionNum(t)
                                         .optionValue((String) optionData.get(l).get("optionValue" + (t + 1)))
                                         .createdDate((String) optionData.get(l).get("regDt"))
-//                                        .optionPrice((Integer) optionData.get(l).get("optionPrice"))
-//                                        .optionViewFl((String) optionData.get(l).get("optionViewFl"))
-//                                        .optionSellFl((String) optionData.get(l).get("optionSellFl"))
                                         .build();
                                 variantOptions.add(variantOption);
                             }
@@ -244,7 +235,9 @@ public class GodoMallProductService implements ProductServiceInterface {
     @Transactional
     @Override
     public void regDateSearchProductInfo(HashMap<String, Object> reqData) {
-
+        List<ProductMaster> products = new ArrayList<>();
+        List<ProductMaster> productsOptionNull = new ArrayList<>();
+        List<ProductDetail> variantOptions = new ArrayList<>();
         authMaster = authRepository.findByMallId((String) reqData.get("mallId"));
 
         urlVariable.add("regDateSize");
@@ -310,9 +303,6 @@ public class GodoMallProductService implements ProductServiceInterface {
                                         .optionNum(t)
                                         .optionValue((String) optionData.get(l).get("optionValue" + (t + 1)))
                                         .createdDate((String) optionData.get(l).get("regDt"))
-//                                        .optionPrice((Integer) optionData.get(l).get("optionPrice"))
-//                                        .optionViewFl((String) optionData.get(l).get("optionViewFl"))
-//                                        .optionSellFl((String) optionData.get(l).get("optionSellFl"))
                                         .build();
                                 variantOptions.add(variantOption);
                             }
@@ -365,9 +355,6 @@ public class GodoMallProductService implements ProductServiceInterface {
                                             .optionNum(t)
                                             .optionValue((String) optionData.get(l).get("optionValue" + (t + 1)))
                                             .createdDate((String) optionData.get(l).get("regDt"))
-//                                            .optionPrice((Integer) optionData.get(l).get("optionPrice"))
-//                                            .optionViewFl((String) optionData.get(l).get("optionViewFl"))
-//                                            .optionSellFl((String) optionData.get(l).get("optionSellFl"))
                                             .build();
                                     variantOptions.add(variantOption);
                                 }
@@ -436,7 +423,6 @@ public class GodoMallProductService implements ProductServiceInterface {
     @Override
     public void upDateStockQty(HashMap<String, Object> upDateQtyData) {
 
-        Unirest.config().socketTimeout(300000);
         HttpResponse<String> response =
                 Unirest.post("https://openhub.godo.co.kr/godomall5/goods/Goods_Stock.php?" +
                                 "partner_key=JTAxbiVCNyUxNk4lODclODYlREI=" +
@@ -444,47 +430,42 @@ public class GodoMallProductService implements ProductServiceInterface {
                                 "&data_url=https://playlink-plus.xmd.co.kr/product/upDateQtyXmlData")
                         .asString();
 
-//        HttpResponse<String> response =
-//                Unirest.get("http://localhost:8080/product/upDateQtyXmlData")
-//                        .asString();
-
-        System.out.println(response.getBody());
-
     }
 
-    @Transactional
-    @Override
-    public String makeProductDataXml() {
-        StringWriter sw = new StringWriter();
-        String res2 = null;
-        try {
-            InsertProductXmlList res = new InsertProductXmlList();
-            List<InsertProductXml> ProductList = new ArrayList<InsertProductXml>();
-
-            List<InsertProductOptionXml> optionList = new ArrayList<InsertProductOptionXml>();
-            for (int j = 1; j < 3; j++) {
-
-                optionList.add(new InsertProductOptionXml(j, j, "블랙" + j, "s" + j, "", "", "", 0, "y", "0"));
-            }
-            for (int i = 1; i < 301; i++) {
-                ProductList.add(new InsertProductXml
-                        (i, "001", "001", "준희" + i, "d", "aa", "bb",
-                                "cc", "y", "y", "y", "y", "1",
-                                "1", "111", "dd", "2018-04-11 00:00:00", "n",
-                                "y", "d", "칼라^|^사이즈", optionList));
-            }
-            res.setGoods_data(ProductList);
-            XmlMapper xmlMapper = new XmlMapper();
-            xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
-            xmlMapper.writeValue(sw, res);
-            System.out.println("뀨");
-            System.out.println("뀨");
-
-        } catch (Exception e) {
-
-        }
-
-        return sw.toString();
-    }
+//    @Transactional
+//    @Override
+//    public String makeProductDataXml() {
+////        StringWriter sw = new StringWriter();
+////        String res2 = null;
+////        try {
+////            InsertProductXmlList res = new InsertProductXmlList();
+////            List<InsertProductXml> ProductList = new ArrayList<InsertProductXml>();
+////
+////            List<InsertProductOptionXml> optionList = new ArrayList<InsertProductOptionXml>();
+////            for (int j = 1; j < 3; j++) {
+////
+////                optionList.add(new InsertProductOptionXml(j, j, "블랙" + j, "s" + j, "", "", "", 0, "y", "0"));
+////            }
+////            for (int i = 1; i < 301; i++) {
+////                ProductList.add(new InsertProductXml
+////                        (i, "001", "001", "준희" + i, "d", "aa", "bb",
+////                                "cc", "y", "y", "y", "y", "1",
+////                                "1", "111", "dd", "2018-04-11 00:00:00", "n",
+////                                "y", "d", "칼라^|^사이즈", optionList));
+////            }
+////            res.setGoods_data(ProductList);
+////            XmlMapper xmlMapper = new XmlMapper();
+////            xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+////            xmlMapper.writeValue(sw, res);
+////            System.out.println("뀨");
+////            System.out.println("뀨");
+////
+////        } catch (Exception e) {
+////
+////        }
+////
+////        return sw.toString();
+//        return null;
+//    }
 
 }

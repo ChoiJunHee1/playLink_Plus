@@ -20,5 +20,5 @@ public interface ProductServiceInterface {
 
     void upDateStockQty(HashMap<String, Object> upDateQtyData);
 
-    String makeProductDataXml();
+//    String makeProductDataXml();
 }

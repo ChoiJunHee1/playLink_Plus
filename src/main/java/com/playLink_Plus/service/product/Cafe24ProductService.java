@@ -45,9 +45,7 @@ public class Cafe24ProductService implements ProductServiceInterface {
     ApiVo apiVo = new ApiVo();
 
     ArrayList<String> urlVariable = new ArrayList<>();
-    List<ProductMaster> productOptionNull = new ArrayList<>();
-    List<ProductMaster> products = new ArrayList<>();
-    List<ProductDetail> VariantOptions = new ArrayList<>();
+
 
     private HttpResponse<String> cafe24ApiUrl(HashMap<String, Object> reqData, ArrayList<String> urlVariable) {
 
@@ -95,7 +93,9 @@ public class Cafe24ProductService implements ProductServiceInterface {
     @Transactional
     @Override   // 쇼핑몰 상품 수집 Service
     public void issuedProductItem(HashMap<String, Object> reqData) {
-
+        List<ProductMaster> productOptionNull = new ArrayList<>();
+        List<ProductMaster> products = new ArrayList<>();
+        List<ProductDetail> VariantOptions = new ArrayList<>();
 
         authMaster = cafe24_auth_service.refreshTokenIssued((String) reqData.get("mallId"));
 
@@ -218,6 +218,7 @@ public class Cafe24ProductService implements ProductServiceInterface {
     @Transactional
     @Override
     public void regDateSearchProductInfo(HashMap<String, Object> reqData) {
+
 
         authMaster = cafe24_auth_service.refreshTokenIssued((String) reqData.get("mallId"));
 
@@ -357,14 +358,36 @@ public class Cafe24ProductService implements ProductServiceInterface {
         return null;
     }
 
-    @Override
-    public String makeProductDataXml() {
+//    @Override
+//    public String makeProductDataXml() {
+//
+//        return null;
+//    }
 
-        return null;
-    }
-
+    @Transactional
     @Override
     public void upDateStockQty(HashMap<String, Object> upDateQtyData) {
+        authMaster = cafe24_auth_service.refreshTokenIssued((String) upDateQtyData.get("mall_id"));
+
+        System.out.println(upDateQtyData);
+        List<Map<String,Object>> upDate_Item_List = (List<Map<String, Object>>) upDateQtyData.get("upDate_Item_List");
+        for (int i= 0; i < upDate_Item_List.size(); i++) {
+            System.out.println(upDate_Item_List.get(i).get("product_no"));
+            Map<String,Object> request_Item = (Map<String, Object>) upDate_Item_List.get(i).get("request_Item");
+            System.out.println(request_Item);
+            HttpResponse<String> response = Unirest.put("https://" + upDateQtyData.get("mall_id") + ".cafe24api.com/api/v2/admin/products/" + upDate_Item_List.get(i).get("product_no") + "/variants")
+                    .header("Content-Type", apiVo.getInsertContentType())
+                    .header("Authorization", "Bearer " + authMaster.getAccessToken())
+                    .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
+                    .header("X-Cafe24-Client-Id", apiVo.getCafe24ClientId())
+                    .body(request_Item)
+                    .asString();
+            log.info(response.getBody());
+
+        }
+
+
+
 
     }
 
