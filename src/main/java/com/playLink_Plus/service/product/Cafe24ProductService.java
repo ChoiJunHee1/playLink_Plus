@@ -45,39 +45,49 @@ public class Cafe24ProductService implements ProductServiceInterface {
     ApiVo apiVo = new ApiVo();
 
     ArrayList<String> urlVariable = new ArrayList<>();
-    private HttpResponse<String> cafe24apiUrl(HashMap<String, Object> reqData, ArrayList<String> urlVariable){
+    List<ProductMaster> productOptionNull = new ArrayList<>();
+    List<ProductMaster> products = new ArrayList<>();
+    List<ProductDetail> VariantOptions = new ArrayList<>();
 
-     String ApiUrl = null;
+    private HttpResponse<String> cafe24ApiUrl(HashMap<String, Object> reqData, ArrayList<String> urlVariable) {
 
+        String ApiUrl = null;
+
+        HttpResponse<String> response = null;
         System.out.println(urlVariable);
-        switch (urlVariable.get(0)){
+        switch (urlVariable.get(0)) {
             case "count":
                 ApiUrl = "/count";
                 break;
             case "productInfo":
-                ApiUrl = "?offset="+urlVariable.get(1)+"00&limit=100";
+                ApiUrl = "?offset=" + urlVariable.get(1) + "00&limit=100";
                 break;
             case "variantInfo":
-                ApiUrl = "/"+urlVariable.get(1) + "/variants";
+                ApiUrl = "/" + urlVariable.get(1) + "/variants";
                 break;
-            case "createProductCount":
-                ApiUrl = "/count?" + urlVariable.get(1) + "="+urlVariable.get(2)+"&" + urlVariable.get(3) + "="+urlVariable.get(4);
+            case "regDateSearchProductCount":
+                ApiUrl = "/count?created_start_date=" + urlVariable.get(1) + "&created_end_date=" + urlVariable.get(2);
                 break;
-            case "createProductInfo":
-                ApiUrl = "?offset=" + urlVariable.get(1) + "00&limit=100&" + urlVariable.get(2) + "="+urlVariable.get(3)+"&" + urlVariable.get(4) + "="+urlVariable.get(5);
+            case "regDateSearchProductInfo":
+                ApiUrl = "?offset=" + urlVariable.get(1) + "00&limit=100&created_start_date=" + urlVariable.get(2) + "&created_end_date=" + urlVariable.get(3);
                 break;
 
         }
-
-        System.out.println("https://" + reqData.get("mallId") + ".cafe24api.com/api/v2/admin/products/"+ApiUrl);
-        HttpResponse<String> response = Unirest.get("https://" + reqData.get("mallId") + ".cafe24api.com/api/v2/admin/products"+ApiUrl)
-                .header("Content-Type", apiVo.getContentType())
-                .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
-                .header("Authorization", "Bearer " + this.authMaster.getAccessToken())
-                .asString();
-
+        try {
+            System.out.println("https://" + reqData.get("mallId") + ".cafe24api.com/api/v2/admin/products/" + ApiUrl);
+            response = Unirest.get("https://" + reqData.get("mallId") + ".cafe24api.com/api/v2/admin/products" + ApiUrl)
+                    .header("Content-Type", apiVo.getContentType())
+                    .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
+                    .header("Authorization", "Bearer " + authMaster.getAccessToken())
+                    .asString();
+        } catch (Exception e) {
+            log.error(urlVariable.get(0) + "요청중 error");
+            log.error("https://" + reqData.get("mallId") + ".cafe24api.com/api/v2/admin/products/" + ApiUrl);
+            log.error(response.getBody());
+        }
         urlVariable.clear();
-
+        log.info(response.getBody());
+        log.info("success");
         return response;
     }
 
@@ -90,7 +100,7 @@ public class Cafe24ProductService implements ProductServiceInterface {
         authMaster = cafe24_auth_service.refreshTokenIssued((String) reqData.get("mallId"));
 
         urlVariable.add("count");
-        HttpResponse<String> responseProductCount = cafe24apiUrl(reqData,urlVariable);
+        HttpResponse<String> responseProductCount = cafe24ApiUrl(reqData, urlVariable);
 
         JSONParser parser = new JSONParser();
         JSONObject ProductCountData = new JSONObject();
@@ -105,8 +115,6 @@ public class Cafe24ProductService implements ProductServiceInterface {
 
         String num = ProductCountData.get("count").toString();
 
-        System.out.println(num);
-
         double offsetDouble = Double.parseDouble(num);
 
         if (offsetDouble < 100) {
@@ -116,15 +124,12 @@ public class Cafe24ProductService implements ProductServiceInterface {
             offsetInt = (int) offsetDouble;
         }
 
-        List<ProductMaster> productOptionNull = new ArrayList<>();
-        List<ProductMaster> products = new ArrayList<>();
-        List<ProductDetail> VariantOptions = new ArrayList<>();
 
         for (int q = 0; q <= offsetInt; q++) {
 
             urlVariable.add("productInfo");
             urlVariable.add(String.valueOf(q));
-            HttpResponse<String> responseProductInfo = cafe24apiUrl(reqData,urlVariable);
+            HttpResponse<String> responseProductInfo = cafe24ApiUrl(reqData, urlVariable);
 
             try {
 
@@ -147,8 +152,7 @@ public class Cafe24ProductService implements ProductServiceInterface {
 
                     urlVariable.add("variantInfo");
                     urlVariable.add(String.valueOf(product_No_int));
-                    HttpResponse<String> responseVariantInfo = cafe24apiUrl(reqData,urlVariable);
-                    System.out.println(responseVariantInfo.getBody());
+                    HttpResponse<String> responseVariantInfo = cafe24ApiUrl(reqData, urlVariable);
                     Map<String, Object> variantData = gson.fromJson(responseVariantInfo.getBody(), new TypeToken<Map<String, Object>>() {
                     }.getType());
                     List<Map<String, Object>> variantList = (List) variantData.get("variants");
@@ -213,49 +217,41 @@ public class Cafe24ProductService implements ProductServiceInterface {
 
     @Transactional
     @Override
-    public void checkProductInfo(HashMap<String, Object> reqData) {
+    public void regDateSearchProductInfo(HashMap<String, Object> reqData) {
 
-               String startDate = "created_start_date";
-               String endDate = "created_end_date";
-
-            System.out.println(startDate);
-
-            authMaster = cafe24_auth_service.refreshTokenIssued((String) reqData.get("mallId"));
-            System.out.println(authMaster);
+        authMaster = cafe24_auth_service.refreshTokenIssued((String) reqData.get("mallId"));
 
 
-        urlVariable.add("createProductCount");
-        urlVariable.add(startDate);
+        urlVariable.add("regDateSearchProductCount");
         urlVariable.add((String) reqData.get("startDate"));
-        urlVariable.add(endDate);
         urlVariable.add((String) reqData.get("endDate"));
 
-        HttpResponse<String> responseCreateProductCount = cafe24apiUrl(reqData,urlVariable);
+        HttpResponse<String> responseSearchProductCount = cafe24ApiUrl(reqData, urlVariable);
 
-            System.out.println(responseCreateProductCount.getBody());
-            JSONParser parser = new JSONParser();
-            JSONObject ProductCountData = new JSONObject();
+        JSONParser parser = new JSONParser();
+        JSONObject ProductCountData = new JSONObject();
 
-            try {
-                ProductCountData = (JSONObject) parser.parse(responseCreateProductCount.getBody());
+        try {
+            ProductCountData = (JSONObject) parser.parse(responseSearchProductCount.getBody());
 
-            } catch (Exception e) {
-                log.error("전체 상품 갯수 요청 중 오류");
-            }
+        } catch (Exception e) {
+            log.error("전체 상품 갯수 요청 중 오류");
+        }
 
-            int offsetInt = 0;
-            String num = ProductCountData.get("count").toString();
 
-            System.out.println(num);
+        int offsetInt = 0;
+        String num = ProductCountData.get("count").toString();
+        System.out.println(num);
+    if(!num.equals("0")){
 
-            double offsetDouble = Double.parseDouble(num);
+        double offsetDouble = Double.parseDouble(num);
 
-            if (offsetDouble < 100) {
-                offsetInt = 0;
-            } else {
-                offsetDouble = Math.ceil(offsetDouble / 100);
-                offsetInt = (int) offsetDouble;
-            }
+        if (offsetDouble < 100) {
+            offsetInt = 0;
+        } else {
+            offsetDouble = Math.ceil(offsetDouble / 100);
+            offsetInt = (int) offsetDouble;
+        }
 
             List<ProductMaster> productOptionNull = new ArrayList<>();
             List<ProductMaster> products = new ArrayList<>();
@@ -266,15 +262,12 @@ public class Cafe24ProductService implements ProductServiceInterface {
 
                 try {
 
-
-                    urlVariable.add("createProductInfo");
+                    urlVariable.add("regDateSearchProductInfo");
                     urlVariable.add(String.valueOf(q));
-                    urlVariable.add(startDate);
                     urlVariable.add((String) reqData.get("startDate"));
-                    urlVariable.add(endDate);
                     urlVariable.add((String) reqData.get("endDate"));
 
-                    HttpResponse<String> responseCreateProductInfo = cafe24apiUrl(reqData,urlVariable);
+                    HttpResponse<String> responseCreateProductInfo = cafe24ApiUrl(reqData, urlVariable);
                     Gson gson = new Gson();
                     Map<String, Object> productData = gson.fromJson(responseCreateProductInfo.getBody(), new TypeToken<Map<String, Object>>() {
                     }.getType());
@@ -290,11 +283,9 @@ public class Cafe24ProductService implements ProductServiceInterface {
                         int product_No_int = (int) product_No;
 
                         Thread.sleep(250);
-
-                       urlVariable.add("variantInfo");
-                    urlVariable.add(String.valueOf(product_No_int));
-                    HttpResponse<String> responseVariantInfo = cafe24apiUrl(reqData,urlVariable);
-                    System.out.println(responseVariantInfo.getBody());
+                        urlVariable.add("variantInfo");
+                        urlVariable.add(String.valueOf(product_No_int));
+                        HttpResponse<String> responseVariantInfo = cafe24ApiUrl(reqData, urlVariable);
 
                         Map<String, Object> variantData = gson.fromJson(responseVariantInfo.getBody(), new TypeToken<Map<String, Object>>() {
                         }.getType());
@@ -356,26 +347,14 @@ public class Cafe24ProductService implements ProductServiceInterface {
                     log.error("에러에러에러");
                 }
             }
-
+        }else {
+            log.info("추가된 상품 정보가 없습니다.");
+        }
     }
 
-    @Transactional
-    @Override //재고수량 안전재고 입력 Service
-    public void upDateProductQty(HashMap<String, Object> upDateQtyData) throws ParseException {
-//        authMaster = cafe24_auth_service.refreshTokenIssued((String) upDateQtyData.get("mall_id"));
+    public String upDateQtyXmlData(HashMap<String, Object> upDateQtyData) throws ParseException {
 
-        System.out.println(upDateQtyData);
-
-
-//            HttpResponse<String> response = Unirest.put("https://" + upDateQtyData.get("mall_id") + ".cafe24api.com/api/v2/admin/products/" + request_Item.get(i).get("product_no") + "/variants")
-//                    .header("Content-Type", apiVo.getInsertContentType())
-//                    .header("Authorization", "Bearer " + authMaster.getAccessToken())
-//                    .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
-//                    .header("X-Cafe24-Client-Id", apiVo.getCafe24ClientId())
-//                    .body(request_Item.get(i).get("request_Item"))
-//                    .asString();
-//            log.info(response.getBody());
-
+        return null;
     }
 
     @Override
@@ -385,7 +364,7 @@ public class Cafe24ProductService implements ProductServiceInterface {
     }
 
     @Override
-    public void insertProductTest() {
+    public void upDateStockQty(HashMap<String, Object> upDateQtyData) {
 
     }
 

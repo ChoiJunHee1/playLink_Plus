@@ -40,6 +40,12 @@ public class ProductDetail implements Serializable {
 
     @Id
     private int optionNum;
+//
+//    private Integer optionPrice;
+//
+//    private String optionViewFl;
+//
+//    private String optionSellFl;
 
     @CreatedDate
     @Column(insertable = true, updatable = false)

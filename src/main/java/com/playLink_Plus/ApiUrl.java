@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class ApiUrl {
 
 
-   private  String ApiKey;
-   private String ApiUrl;
+    private String ApiKey;
+    private String ApiUrl;
 }
