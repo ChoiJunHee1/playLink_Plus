@@ -25,6 +25,11 @@ public class PlTenantService implements PlTenantServiceInterface {
     }
 
     @Override
+    public void delete(Long id) {
+        tenantRepository.deleteById(id);
+    }
+
+    @Override
     public Optional<PlTenant> findTenantByServiceAndTenant(String service, String tenant) {
         return tenantRepository.findPlTenantByServiceAndTenant(service, tenant);
     }
@@ -33,5 +38,15 @@ public class PlTenantService implements PlTenantServiceInterface {
     @Override
     public Iterable<PlTenant> findPlTenantsByServiceAndKeyword(String service, String keyword) {
         return tenantRepository.findPlTenantsByServiceAndKeyword(service, keyword);
+    }
+
+    @Override
+    public Iterable<PlTenant> findAll() {
+        return tenantRepository.findAll();
+    }
+
+    @Override
+    public Optional<PlTenant> findTenantById(Long id) {
+        return tenantRepository.findById(id);
     }
 }

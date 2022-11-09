@@ -25,6 +25,25 @@ public class PlayLinkController {
         return plTenantService.findPlTenantsByServiceAndKeyword(service, StringUtils.replace(keyword, "_", "\\_"));
     }
 
+    @GetMapping(value = "/tenant/list/all")
+    public Iterable<PlTenant> listTenant() {
+        return plTenantService.findAll();
+    }
+
+
+    @PostMapping(value = "/tenant/delete")
+    public void deleteTenant(@RequestParam(name = "id") Long id) {
+        Optional<PlTenant> result= plTenantService.findTenantById(id);
+
+        if(result.isPresent()) {
+            plTenantService.delete(result.get().getTenantIdx());
+        }
+        else {
+            throw new RuntimeException("삭제할 id가 없습니다.");
+        }
+    }
+
+
     @PostMapping(value = "/tenant/registration", consumes = {MediaType.APPLICATION_JSON_VALUE})
     public String registerTenant(@RequestBody TenantRegistrationDto tenantRegistrationDto) throws Exception {
 
@@ -47,10 +66,7 @@ public class PlayLinkController {
 
             plTenantService.save(plTenant);
         }
-
 //        log.info(tenantRegistrationDto.getService());
-//
-//
 //        log.info(tenantRegistrationDto.toString());
         return tenantRegistrationDto.toString();
     }
