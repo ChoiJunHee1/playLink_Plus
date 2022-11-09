@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 public interface AuthRepository extends JpaRepository<AuthMaster, String> {
     AuthMaster findByMallId(String mallId);
 
+    AuthMaster findBySystemIdAndMallId(String systemId,String mallid);
+
 //    Optional<AuthMaster> findByMallId(String mallid); //카멜문법 아주 중요함!!
 
 }

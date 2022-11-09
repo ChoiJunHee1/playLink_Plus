@@ -171,6 +171,16 @@ public class Cafe24ProductService implements ProductServiceInterface {
                                     .optionQty(0).build();
                             productOptionNull.add(product_List);
 
+                            ProductDetail variantOption = ProductDetail.builder()
+                                    .mallId((String) reqData.get("mallId"))
+                                    .systemId("cafe24")
+                                    .variantCode((String) variantList.get(j).get("variant_code"))
+                                    .productCode(product_code)
+                                    .optionNum(0)
+                                    .createdDate((String) productList.get(i).get("created_date"))
+                                    .build();
+                            VariantOptions.add(variantOption);
+
                         } else {
 
                             List<Map<String, Object>> variantOptionsList = (List) variantList.get(j).get("options");
@@ -187,7 +197,6 @@ public class Cafe24ProductService implements ProductServiceInterface {
                             products.add(product_List);
 
                             for (int t = 0; t < variantOptionsList.size(); t++) {
-                                LocalDateTime now = LocalDateTime.now();
                                 ProductDetail variantOption = ProductDetail.builder()
                                         .mallId((String) reqData.get("mallId"))
                                         .systemId("cafe24")
@@ -219,9 +228,7 @@ public class Cafe24ProductService implements ProductServiceInterface {
     @Override
     public void regDateSearchProductInfo(HashMap<String, Object> reqData) {
 
-
         authMaster = cafe24_auth_service.refreshTokenIssued((String) reqData.get("mallId"));
-
 
         urlVariable.add("regDateSearchProductCount");
         urlVariable.add((String) reqData.get("startDate"));
@@ -306,6 +313,16 @@ public class Cafe24ProductService implements ProductServiceInterface {
                                         .optionQty(0).build();
                                 productOptionNull.add(product_List);
 
+                                ProductDetail variantOption = ProductDetail.builder()
+                                        .mallId((String) reqData.get("mallId"))
+                                        .systemId("cafe24")
+                                        .variantCode((String) variantList.get(j).get("variant_code"))
+                                        .productCode(product_code)
+                                        .optionNum(0)
+                                        .createdDate((String) productList.get(i).get("created_date"))
+                                        .build();
+                                VariantOptions.add(variantOption);
+
                             } else {
 
                                 List<Map<String, Object>> variantOptionsList = (List) variantList.get(j).get("options");
@@ -353,7 +370,7 @@ public class Cafe24ProductService implements ProductServiceInterface {
         }
     }
 
-    public String upDateQtyXmlData(HashMap<String, Object> upDateQtyData) throws ParseException {
+    public String upDateQtyXmlData(String systemId,String mallId) {
 
         return null;
     }
@@ -366,16 +383,16 @@ public class Cafe24ProductService implements ProductServiceInterface {
 
     @Transactional
     @Override
-    public void upDateStockQty(HashMap<String, Object> upDateQtyData) {
-        authMaster = cafe24_auth_service.refreshTokenIssued((String) upDateQtyData.get("mall_id"));
+    public void upDateStockQty(String upDateQtyData, HashMap<String, Object> reqDataHashMap) {
+        authMaster = cafe24_auth_service.refreshTokenIssued((String) reqDataHashMap.get("mall_id"));
 
         System.out.println(upDateQtyData);
-        List<Map<String,Object>> upDate_Item_List = (List<Map<String, Object>>) upDateQtyData.get("upDate_Item_List");
+        List<Map<String,Object>> upDate_Item_List = (List<Map<String, Object>>) reqDataHashMap.get("upDate_Item_List");
         for (int i= 0; i < upDate_Item_List.size(); i++) {
             System.out.println(upDate_Item_List.get(i).get("product_no"));
             Map<String,Object> request_Item = (Map<String, Object>) upDate_Item_List.get(i).get("request_Item");
             System.out.println(request_Item);
-            HttpResponse<String> response = Unirest.put("https://" + upDateQtyData.get("mall_id") + ".cafe24api.com/api/v2/admin/products/" + upDate_Item_List.get(i).get("product_no") + "/variants")
+            HttpResponse<String> response = Unirest.put("https://" + reqDataHashMap.get("mall_id") + ".cafe24api.com/api/v2/admin/products/" + upDate_Item_List.get(i).get("product_no") + "/variants")
                     .header("Content-Type", apiVo.getInsertContentType())
                     .header("Authorization", "Bearer " + authMaster.getAccessToken())
                     .header("X-Cafe24-Api-Version", apiVo.getCafe24ApiVersion())
@@ -385,9 +402,6 @@ public class Cafe24ProductService implements ProductServiceInterface {
             log.info(response.getBody());
 
         }
-
-
-
 
     }
 

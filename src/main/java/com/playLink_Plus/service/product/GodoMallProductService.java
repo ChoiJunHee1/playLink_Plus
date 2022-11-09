@@ -27,8 +27,9 @@ import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.StringWriter;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -138,6 +139,7 @@ public class GodoMallProductService implements ProductServiceInterface {
                                 .productName((String) goodsData.get("goodsNm"))
                                 .systemId("godoMall")
                                 .option_yn((String) goodsData.get("optionFl"))
+                                .createdDate((String) goodsData.get("regDt"))
                                 .optionQty(optionData.size()).build();
 
                         String str = goodsData.get("optionName").toString();
@@ -167,6 +169,7 @@ public class GodoMallProductService implements ProductServiceInterface {
                             .systemId("godoMall")
                             .option_yn((String) goodsData.get("optionFl"))
                             .productCode(String.valueOf(goodsNoInt))
+                            .createdDate((String) goodsData.get("regDt"))
                             .optionQty(0).build();
                     productsOptionNull.add(product_List);
 
@@ -193,6 +196,7 @@ public class GodoMallProductService implements ProductServiceInterface {
                                     .productName((String) goodsData.get(j).get("goodsNm"))
                                     .systemId("godoMall")
                                     .option_yn((String) goodsData.get(j).get("optionFl"))
+                                    .createdDate((String) goodsData.get(j).get("regDt"))
                                     .optionQty(optionData.size()).build();
 
                             String str = goodsData.get(j).get("optionName").toString();
@@ -223,6 +227,7 @@ public class GodoMallProductService implements ProductServiceInterface {
                                 .systemId("godoMall")
                                 .option_yn((String) goodsData.get(j).get("optionFl"))
                                 .productCode(String.valueOf(goodsNoInt))
+                                .createdDate((String) goodsData.get(j).get("regDt"))
                                 .optionQty(0).build();
                         productsOptionNull.add(product_List);
 
@@ -255,8 +260,8 @@ public class GodoMallProductService implements ProductServiceInterface {
         }.getType());
         Map<String, Object> reqPageData = (Map<String, Object>) productPage.get("data");
         Map<String, Object> maxPage = (Map<String, Object>) reqPageData.get("header");
-            String maxPageStr = (String) maxPage.get("max_page");
-            if(!maxPageStr.equals("0")) {
+        String maxPageStr = (String) maxPage.get("max_page");
+        if (!maxPageStr.equals("0")) {
             int max_page = Integer.parseInt(maxPageStr);
             for (int i = 0; i < max_page; i++) {
 
@@ -290,6 +295,8 @@ public class GodoMallProductService implements ProductServiceInterface {
                                     .productName((String) goodsData.get("goodsNm"))
                                     .systemId("godoMall")
                                     .option_yn((String) goodsData.get("optionFl"))
+                                    .createdDate("")
+                                    .createdDate((String) goodsData.get("regDt"))
                                     .optionQty(optionData.size()).build();
 
                             String str = goodsData.get("optionName").toString();
@@ -318,6 +325,7 @@ public class GodoMallProductService implements ProductServiceInterface {
                                 .productName((String) goodsData.get("goodsNm"))
                                 .systemId("godoMall")
                                 .option_yn((String) goodsData.get("optionFl"))
+                                .createdDate((String) goodsData.get("regDt"))
                                 .optionQty(0).build();
                         productsOptionNull.add(product_List);
 
@@ -342,6 +350,7 @@ public class GodoMallProductService implements ProductServiceInterface {
                                         .productName((String) goodsData.get(j).get("goodsNm"))
                                         .systemId("godoMall")
                                         .option_yn((String) goodsData.get(j).get("optionFl"))
+                                        .createdDate((String) goodsData.get(j).get("regDt"))
                                         .optionQty(optionData.size()).build();
 
                                 String str = goodsData.get(j).get("optionName").toString();
@@ -370,6 +379,7 @@ public class GodoMallProductService implements ProductServiceInterface {
                                     .productName((String) goodsData.get(j).get("goodsNm"))
                                     .systemId("godoMall")
                                     .option_yn((String) goodsData.get(j).get("optionFl"))
+                                    .createdDate((String) goodsData.get(j).get("regDt"))
                                     .optionQty(0).build();
                             productsOptionNull.add(product_List);
 
@@ -380,88 +390,93 @@ public class GodoMallProductService implements ProductServiceInterface {
             productRepository.saveAll(productsOptionNull);
             productRepository.saveAll(products);
             productDetailRepository.saveAll(variantOptions);
-        }else{
-                log.info("추가된 상품 정보가 없습니다.");
+        } else {
+            log.info("추가된 상품 정보가 없습니다.");
         }
 
     }
 
     @Transactional
     @Override
-    public String upDateQtyXmlData(HashMap<String, Object> upDate_QtyData) throws ParseException {
-        UpDateStockQty UpDateStockData = upDateStockProductQtyRepository.findByMallKey("TC1zayUwMCVGRXolOUUlNUUlQTVJJUExJUNFJUVEJUU1JTNDVWslRTUlRjclRUY4JTNDJTVDJUQ1JTEyJTVDTiVERCUwNSVGNVglM0IlRjQlMTUlMURHJUNEbSVCQg==");
-        String UpDateStockDataString =UpDateStockData.getUpDateStockQtyData();
-        JSONParser parser = new JSONParser();
-        Object UpDateStockDataObject = parser.parse(UpDateStockDataString);
+    public void upDateStockQty(String upDateQtyData, HashMap<String, Object> reqDataHashMap) {
 
-        HashMap<String,Object> UpDateStockDataHashMap = (HashMap<String, Object>) UpDateStockDataObject;
+        System.out.println(reqDataHashMap.get("mallId"));
+        AuthMaster authData = authRepository.findBySystemIdAndMallId((String) reqDataHashMap.get("systemId"), (String) reqDataHashMap.get("mallId"));
 
+        String upDateQtyDataString = String.valueOf(upDateQtyData);
+        upDateQtyDataString.replace("\'", "\''").replace("\"", "\\\"");
+        UpDateStockQty upDateStockQty = UpDateStockQty.builder()
+                .UpDateStockQtyData(upDateQtyDataString)
+                .mallKey(authData.getAccessToken())
+                .systemId((String) reqDataHashMap.get("systemId"))
+                .mallId((String) reqDataHashMap.get("mallId"))
+                .build();
+        upDateStockProductQtyRepository.save(upDateStockQty);
+//        HttpResponse<String> response =
+//                Unirest.post("https://openhub.godo.co.kr/godomall5/goods/Goods_Stock.php?" +
+//                                "partner_key=" + authData.getAuthorizationCode() +
+//                                "&key=" + authData.getAccessToken() +
+//                                "&data_url=https://playlink-plus.xmd.co.kr/product/upDateQtyXmlData/" + reqDataHashMap.get("systemId") + "/" + reqDataHashMap.get("mallId"))
+//                        .asString();
+        HttpResponse<String> response =
+                Unirest.post("http://localhost:8080/product/upDateQtyXmlData/"+reqDataHashMap.get("systemId")+"/"+reqDataHashMap.get("mallId"))
+                        .asString();
+
+        System.out.println(response.getBody());
+    }
+
+    @Transactional
+    @Override
+    public String upDateQtyXmlData(String systemId, String mallId) throws ParseException {
+        System.out.println(mallId);
+        UpDateStockQty UpDateStockData = upDateStockProductQtyRepository.findBySystemIdAndMallId(systemId, mallId);
+        String upDateStockDataString = UpDateStockData.getUpDateStockQtyData();
+        JSONParser jsonParser = new JSONParser();
+        Object UpDateStockDataObject = jsonParser.parse(UpDateStockData.getUpDateStockQtyData());
+        Map<String, Object> UpDateStockDataMap = (Map<String, Object>) UpDateStockDataObject;
+//        System.out.println(UpDateStockDataMap.get("upDate_Item_List"));
         List<StockGoodsData> stockGoodsData = new ArrayList<StockGoodsData>();
 
-        List<Map<String,Object>> upDate_Item_List = (List<Map<String, Object>>) UpDateStockDataHashMap.get("upDate_Item_List");
-        System.out.println(upDate_Item_List);
+        List<Map<String, Object>> upDate_Item_List = (List<Map<String, Object>>) UpDateStockDataMap.get("upDate_Item_List");
+//        System.out.println(upDate_Item_List);
         StringWriter sw = new StringWriter();
         StockGoodsDataList res = new StockGoodsDataList();
 
-     for(int i=0; i < upDate_Item_List.size(); i++) {
-         int idx = i+1;
-         System.out.println(upDate_Item_List.get(i).get("product_no"));
+        for (int i = 0; i < upDate_Item_List.size(); i++) {
+            int idx = i + 1;
+//            System.out.println(upDate_Item_List.get(i).get("product_no"));
 
-         Long productNo = (Long) upDate_Item_List.get(i).get("product_no");
-         int productNoInt = Math.toIntExact(productNo);
+            Long productNo = (Long) upDate_Item_List.get(i).get("product_no");
+            int productNoInt = Math.toIntExact(productNo);
 
-         Map<String,Object> request_Item = (Map<String, Object>) upDate_Item_List.get(i).get("request_Item");
-         List<Map<String,Object>> requests = (List<Map<String, Object>>) request_Item.get("requests");
-         List<StockOptionData> stockOptionData = new ArrayList<StockOptionData>();
-         for (int j = 0; j < requests.size(); j++) {
-             int id = j+1;
+            Map<String, Object> request_Item = (Map<String, Object>) upDate_Item_List.get(i).get("request_Item");
+            List<Map<String, Object>> requests = (List<Map<String, Object>>) request_Item.get("requests");
+            List<StockOptionData> stockOptionData = new ArrayList<StockOptionData>();
+            for (int j = 0; j < requests.size(); j++) {
+                int id = j + 1;
 
-             Long quantity = (Long) requests.get(j).get("quantity");
-             int quantityInt = Math.toIntExact(quantity);
+                Long quantity = (Long) requests.get(j).get("quantity");
+                int quantityInt = Math.toIntExact(quantity);
 
-             stockOptionData.add(new StockOptionData(id, (String) requests.get(j).get("variant_code"), quantityInt));
-         }
-         stockGoodsData.add(new StockGoodsData(idx, productNoInt, (String) upDate_Item_List.get(i).get("optionFl"), stockOptionData));
-     }
+                stockOptionData.add(new StockOptionData(id, (String) requests.get(j).get("variant_code"), quantityInt));
+            }
+            stockGoodsData.add(new StockGoodsData(idx, productNoInt, (String) upDate_Item_List.get(i).get("optionFl"), stockOptionData));
+        }
 
         res.setGoods_data(stockGoodsData);
         try {
             XmlMapper xmlMapper = new XmlMapper();
             xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
             xmlMapper.writeValue(sw, res);
-            System.out.println("뀨");
-        }catch (Exception e){
+//            System.out.println("뀨");
+        } catch (Exception e) {
 
         }
-        System.out.println(sw.toString());
+        upDateStockProductQtyRepository.deleteBySystemIdAndMallId(systemId, mallId);
+
         return sw.toString();
-//        return null;
     }
 
-    @Transactional
-    @Override
-    public void upDateStockQty(HashMap<String, Object> upDateQtyData) {
-
-        String upDateQtyDataString = String.valueOf(upDateQtyData);
-        UpDateStockQty upDateStockQty = UpDateStockQty.builder()
-                .UpDateStockQtyData(upDateQtyDataString)
-                .mallKey("TC1zayUwMCVGRXolOUUlNUUlQTVJJUExJUNFJUVEJUU1JTNDVWslRTUlRjclRUY4JTNDJTVDJUQ1JTEyJTVDTiVERCUwNSVGNVglM0IlRjQlMTUlMURHJUNEbSVCQg==")
-                .systemId("godomall")
-                .mallId("wnsgml8809")
-                .build();
-
-        upDateStockProductQtyRepository.save(upDateStockQty);
-//        HttpResponse<String> response =
-//                Unirest.post("https://openhub.godo.co.kr/godomall5/goods/Goods_Stock.php?" +
-//                                "partner_key=JTAxbiVCNyUxNk4lODclODYlREI=" +
-//                                "&key=TC1zayUwMCVGRXolOUUlNUUlQTVJJUExJUNFJUVEJUU1JTNDVWslRTUlRjclRUY4JTNDJTVDJUQ1JTEyJTVDTiVERCUwNSVGNVglM0IlRjQlMTUlMURHJUNEbSVCQg==" +
-//                                "&data_url=https://playlink-plus.xmd.co.kr/product/upDateQtyXmlData/bvnvbvnhk")
-//                        .asString();
-        HttpResponse<String> response =
-                Unirest.post("http://localhost:8080/product//upDateQtyXmlData/"+upDateQtyData.get("mallId")+"/"+upDateQtyData.get("systemId"))
-                        .asString();
-//        System.out.println(response.getBody());
-    }
 
 //    @Transactional
 //    @Override

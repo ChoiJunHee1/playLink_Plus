@@ -1,5 +1,6 @@
 package com.playLink_Plus.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.playLink_Plus.dto.ProductDto;
 import com.playLink_Plus.entity.AuthMaster;
 import com.playLink_Plus.repository.AuthRepository;
@@ -13,6 +14,7 @@ import com.playLink_Plus.service.product.Cafe24ProductService;
 import com.playLink_Plus.service.product.GodoMallProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -63,27 +65,33 @@ public class ProductController {
     }
 
 
-    @GetMapping("/upDateQtyXmlData/{systemId}/{mallId}")
-    public String upDateProduct_Qty(@PathVariable String systemId,@PathVariable String mallId) throws ParseException {
-        System.out.println(systemId);
-        System.out.println(mallId);
-        productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository,upDateStockProductQtyRepository);
-        return productService.upDateQtyXmlData(reqData22);
 
-    }
 
     @GetMapping("/upDateStockQty")
-    public void insertProductTest(@RequestBody HashMap<String, Object> reqData) throws InterruptedException {
-        if (reqData.get("systemId").equals("cafe24")) {
-            productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
-        } else if (reqData.get("systemId").equals("godomall")) {
-            System.out.println(reqData);
-            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository,upDateStockProductQtyRepository);
+    public void insertProductTest(@RequestBody String reqDataString) throws InterruptedException {
+        JSONParser parser = new JSONParser();
+        Object obj = null;
+        try {
+            obj = parser.parse(reqDataString);
+        } catch (Exception e) {
+
         }
-        productService.upDateStockQty(reqData);
+        HashMap<String, Object> reqDataHashMap = (HashMap<String, Object>) obj;
+        if (reqDataHashMap.get("systemId").equals("cafe24")) {
+            productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
+        } else if (reqDataHashMap.get("systemId").equals("godomall")) {
+            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository, upDateStockProductQtyRepository);
+        }
+        productService.upDateStockQty(reqDataString,reqDataHashMap);
 
     }
 
+    @GetMapping("/upDateQtyXmlData/{systemId}/{mallId}")
+    public String upDateProduct_Qty(@PathVariable String systemId,@PathVariable String mallId) throws JsonProcessingException, ParseException {
+        productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository,upDateStockProductQtyRepository);
+        return productService.upDateQtyXmlData(systemId,mallId);
+
+    }
 //    @GetMapping(path = "/makeProductDataXml", produces = MediaType.APPLICATION_XML_VALUE)
 //    public String makeProductDataXml() {
 //        productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository);

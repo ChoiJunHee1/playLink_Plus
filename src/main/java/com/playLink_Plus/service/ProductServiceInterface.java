@@ -15,10 +15,10 @@ public interface ProductServiceInterface {
     void regDateSearchProductInfo(HashMap<String, Object> reqData);
 
     @Autowired
-    String upDateQtyXmlData(HashMap<String, Object> upDate_QtyData) throws ParseException;
+    String upDateQtyXmlData(String systemId,String mallId) throws ParseException;
 
 
-    void upDateStockQty(HashMap<String, Object> upDateQtyData);
+    void upDateStockQty(String upDateQtyData, HashMap<String, Object> reqDataHashMap);
 
 //    String makeProductDataXml();
 }
