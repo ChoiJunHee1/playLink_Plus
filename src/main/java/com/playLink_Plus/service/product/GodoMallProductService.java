@@ -51,30 +51,38 @@ public class GodoMallProductService implements ProductServiceInterface {
     private HttpResponse<String> godoMallApiUrl(HashMap<String, Object> reqData, ArrayList<String> urlVariable) {
 
         authMaster = authRepository.findByMallId((String) reqData.get("mallId"));
+        String SearchType = null;
         String ApiUrl = null;
 
         HttpResponse<String> response = null;
         System.out.println(urlVariable);
         switch (urlVariable.get(0)) {
             case "size":
+                SearchType = "https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key=";
                 ApiUrl = "&size=100";
                 break;
             case "productInfo":
+                SearchType = "https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key=";
                 ApiUrl = "&size=100&page=" + urlVariable.get(1);
                 break;
             case "regDateSize":
+                SearchType = "https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key=";
                 ApiUrl = "&size=100&searchDateType=regDt&startDate=" + urlVariable.get(1) + "&endDate=" + urlVariable.get(2);
                 break;
             case "regDateSearchProductInfo":
+                SearchType = "https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key=";
                 ApiUrl = "&size=100&page=" + urlVariable.get(1) + "&searchDateType=regDt&startDate=" + urlVariable.get(2) + "&endDate=" + urlVariable.get(3);
                 break;
-
+            case "upDateStockQty":
+                SearchType = "https://openhub.godo.co.kr/godomall5/goods/Goods_Stock.php?partner_key=";
+                ApiUrl = "&data_url=https://playlink-plus.xmd.co.kr/product/upDateQtyXmlData/" + urlVariable.get(1)+"/"+urlVariable.get(2);
+                break;
         }
         try {
             response = Unirest.post
-                            ("https://openhub.godo.co.kr/godomall5/goods/Goods_Search.php?partner_key="
-                                    + authMaster.getAuthorizationCode() + "&key=" + authMaster.getAccessToken() + ApiUrl)
+                            (SearchType + authMaster.getAuthorizationCode() + "&key=" + authMaster.getAccessToken() + ApiUrl)
                     .asString();
+
 
         } catch (Exception e) {
             log.error(urlVariable.get(0) + "요청중 error");
@@ -412,17 +420,18 @@ public class GodoMallProductService implements ProductServiceInterface {
                 .mallId((String) reqDataHashMap.get("mallId"))
                 .build();
         upDateStockProductQtyRepository.save(upDateStockQty);
-//        HttpResponse<String> response =
-//                Unirest.post("https://openhub.godo.co.kr/godomall5/goods/Goods_Stock.php?" +
-//                                "partner_key=" + authData.getAuthorizationCode() +
-//                                "&key=" + authData.getAccessToken() +
-//                                "&data_url=https://playlink-plus.xmd.co.kr/product/upDateQtyXmlData/" + reqDataHashMap.get("systemId") + "/" + reqDataHashMap.get("mallId"))
-//                        .asString();
-        HttpResponse<String> response =
-                Unirest.post("http://localhost:8080/product/upDateQtyXmlData/"+reqDataHashMap.get("systemId")+"/"+reqDataHashMap.get("mallId"))
-                        .asString();
 
-        System.out.println(response.getBody());
+        urlVariable.add("upDateStockQty");
+        urlVariable.add((String) reqDataHashMap.get("systemId"));
+        urlVariable.add((String) reqDataHashMap.get("mallId"));
+        HttpResponse<String> responseUpDateStockQty = godoMallApiUrl(reqDataHashMap, urlVariable);
+
+        //로컬 테스트용
+//        HttpResponse<String> responseUpDateStockQty =
+//                Unirest.post("http://localhost:8080/product/upDateQtyXmlData/"+reqDataHashMap.get("systemId")+"/"+reqDataHashMap.get("mallId"))
+//                        .asString();
+
+        System.out.println(responseUpDateStockQty.getBody());
     }
 
     @Transactional
