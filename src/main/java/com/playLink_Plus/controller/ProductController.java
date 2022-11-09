@@ -5,6 +5,7 @@ import com.playLink_Plus.entity.AuthMaster;
 import com.playLink_Plus.repository.AuthRepository;
 import com.playLink_Plus.repository.ProductDetailRepository;
 import com.playLink_Plus.repository.ProductRepository;
+import com.playLink_Plus.repository.UpDateStockProductQtyRepository;
 import com.playLink_Plus.service.AuthServiceInterface;
 import com.playLink_Plus.service.ProductServiceInterface;
 import com.playLink_Plus.service.auth.Cafe24AuthService;
@@ -28,6 +29,7 @@ public class ProductController {
     final Cafe24AuthService cafe24AuthService;
     final ProductDetailRepository productDetailRepository;
     final ProductRepository productRepository;
+    final UpDateStockProductQtyRepository upDateStockProductQtyRepository;
     ProductServiceInterface productService = null;
     AuthServiceInterface auth_service = null;
 
@@ -42,7 +44,7 @@ public class ProductController {
         if (reqData.get("systemId").equals("cafe24")) {
             productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
         } else if (reqData.get("systemId").equals("godomall")) {
-            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository);
+            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository,upDateStockProductQtyRepository);
         }
         productService.issuedProductItem(reqData);
     }
@@ -54,19 +56,19 @@ public class ProductController {
         if (reqData.get("systemId").equals("cafe24")) {
             productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
         } else if (reqData.get("systemId").equals("godomall")) {
-            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository);
+            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository,upDateStockProductQtyRepository);
         }
 
         productService.regDateSearchProductInfo(reqData);
     }
 
 
-    @GetMapping("/upDateQtyXmlData")
-    public String upDateProduct_Qty() throws ParseException {
-
-        productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository);
-        String returnXml = productService.upDateQtyXmlData(reqData22);
-        return returnXml;
+    @GetMapping("/upDateQtyXmlData/{systemId}/{mallId}")
+    public String upDateProduct_Qty(@PathVariable String systemId,@PathVariable String mallId) throws ParseException {
+        System.out.println(systemId);
+        System.out.println(mallId);
+        productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository,upDateStockProductQtyRepository);
+        return productService.upDateQtyXmlData(reqData22);
 
     }
 
@@ -75,9 +77,8 @@ public class ProductController {
         if (reqData.get("systemId").equals("cafe24")) {
             productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
         } else if (reqData.get("systemId").equals("godomall")) {
-            reqData22 = reqData;
-            System.out.println(reqData22);
-            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository);
+            System.out.println(reqData);
+            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository,upDateStockProductQtyRepository);
         }
         productService.upDateStockQty(reqData);
 
