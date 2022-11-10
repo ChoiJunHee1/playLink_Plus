@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface UpDateStockProductQtyRepository extends JpaRepository<UpDateStockQty, Long> {
-    UpDateStockQty findBySystemIdAndMallId(String systemId,String mallId);
+    UpDateStockQty findBySystemIdAndMallId(String systemId, String mallId);
 
     @Transactional
     void deleteBySystemIdAndMallId(String systemId, String mallId);

@@ -27,7 +27,6 @@ import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.StringWriter;
 import java.util.*;
@@ -75,7 +74,7 @@ public class GodoMallProductService implements ProductServiceInterface {
                 break;
             case "upDateStockQty":
                 SearchType = "https://openhub.godo.co.kr/godomall5/goods/Goods_Stock.php?partner_key=";
-                ApiUrl = "&data_url=https://playlink-plus.xmd.co.kr/product/upDateQtyXmlData/" + urlVariable.get(1)+"/"+urlVariable.get(2);
+                ApiUrl = "&data_url=https://playlink-plus.xmd.co.kr/product/upDateQtyXmlData/" + urlVariable.get(1) + "/" + urlVariable.get(2);
                 break;
         }
         try {
@@ -426,63 +425,68 @@ public class GodoMallProductService implements ProductServiceInterface {
         urlVariable.add((String) reqDataHashMap.get("mallId"));
         HttpResponse<String> responseUpDateStockQty = godoMallApiUrl(reqDataHashMap, urlVariable);
 
-        //로컬 테스트용
-//        HttpResponse<String> responseUpDateStockQty =
-//                Unirest.post("http://localhost:8080/product/upDateQtyXmlData/"+reqDataHashMap.get("systemId")+"/"+reqDataHashMap.get("mallId"))
-//                        .asString();
-
         System.out.println(responseUpDateStockQty.getBody());
+
+
     }
 
     @Transactional
     @Override
     public String upDateQtyXmlData(String systemId, String mallId) throws ParseException {
-        System.out.println(mallId);
+
         UpDateStockQty UpDateStockData = upDateStockProductQtyRepository.findBySystemIdAndMallId(systemId, mallId);
         String upDateStockDataString = UpDateStockData.getUpDateStockQtyData();
         JSONParser jsonParser = new JSONParser();
         Object UpDateStockDataObject = jsonParser.parse(UpDateStockData.getUpDateStockQtyData());
         Map<String, Object> UpDateStockDataMap = (Map<String, Object>) UpDateStockDataObject;
-//        System.out.println(UpDateStockDataMap.get("upDate_Item_List"));
-        List<StockGoodsData> stockGoodsData = new ArrayList<StockGoodsData>();
 
+        List<StockGoodsData> stockGoodsData = new ArrayList<StockGoodsData>();
         List<Map<String, Object>> upDate_Item_List = (List<Map<String, Object>>) UpDateStockDataMap.get("upDate_Item_List");
-//        System.out.println(upDate_Item_List);
         StringWriter sw = new StringWriter();
         StockGoodsDataList res = new StockGoodsDataList();
 
         for (int i = 0; i < upDate_Item_List.size(); i++) {
+
             int idx = i + 1;
-//            System.out.println(upDate_Item_List.get(i).get("product_no"));
 
             Long productNo = (Long) upDate_Item_List.get(i).get("product_no");
             int productNoInt = Math.toIntExact(productNo);
 
+
             Map<String, Object> request_Item = (Map<String, Object>) upDate_Item_List.get(i).get("request_Item");
-            List<Map<String, Object>> requests = (List<Map<String, Object>>) request_Item.get("requests");
+
             List<StockOptionData> stockOptionData = new ArrayList<StockOptionData>();
-            for (int j = 0; j < requests.size(); j++) {
-                int id = j + 1;
+            if (upDate_Item_List.get(i).get("optionFl").equals("y")) {
+                List<Map<String, Object>> requests = (List<Map<String, Object>>) request_Item.get("requests");
+                for (int j = 0; j < requests.size(); j++) {
+                    int id = j + 1;
 
-                Long quantity = (Long) requests.get(j).get("quantity");
-                int quantityInt = Math.toIntExact(quantity);
+                    Long quantity = (Long) requests.get(j).get("quantity");
+                    int quantityInt = Math.toIntExact(quantity);
 
-                stockOptionData.add(new StockOptionData(id, (String) requests.get(j).get("variant_code"), quantityInt));
+                    stockOptionData.add(new StockOptionData(id, (String) requests.get(j).get("variant_code"), quantityInt));
+                }
+                stockGoodsData.add(new StockGoodsData(idx, productNoInt, (String) upDate_Item_List.get(i).get("optionFl"), 0, stockOptionData));
+                res.setGoods_data(stockGoodsData);
+
+            } else {
+
+                Long totalStock = (Long) upDate_Item_List.get(i).get("totalStock");
+                int totalStockInt = Math.toIntExact(totalStock);
+
+                stockGoodsData.add(new StockGoodsData(idx, productNoInt, (String) upDate_Item_List.get(i).get("optionFl"), totalStockInt, stockOptionData));
+                res.setGoods_data(stockGoodsData);
             }
-            stockGoodsData.add(new StockGoodsData(idx, productNoInt, (String) upDate_Item_List.get(i).get("optionFl"), stockOptionData));
         }
 
-        res.setGoods_data(stockGoodsData);
         try {
             XmlMapper xmlMapper = new XmlMapper();
             xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
             xmlMapper.writeValue(sw, res);
-//            System.out.println("뀨");
         } catch (Exception e) {
 
         }
         upDateStockProductQtyRepository.deleteBySystemIdAndMallId(systemId, mallId);
-
         return sw.toString();
     }
 

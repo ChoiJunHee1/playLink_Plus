@@ -25,6 +25,9 @@ public class StockGoodsData {
     @JacksonXmlProperty
     private String optionFl;
 
+    @JacksonXmlProperty
+    private Integer totalStock;
+
     @JacksonXmlProperty(localName = "stockOptionData")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<StockOptionData> stockOptionData;

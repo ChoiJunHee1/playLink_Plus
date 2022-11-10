@@ -14,4 +14,5 @@ public class StockGoodsDataList {
     @JacksonXmlProperty(localName = "goods_data")
     @JacksonXmlElementWrapper(useWrapping = false)
     List<StockGoodsData> goods_data = new ArrayList<>();
+
 }

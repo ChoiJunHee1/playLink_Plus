@@ -51,7 +51,6 @@ public class ProductDetail implements Serializable {
     @Column(insertable = true, updatable = false)
     private LocalDateTime createdAt;
 
-
     @Id
     private String systemId;
 

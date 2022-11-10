@@ -13,7 +13,6 @@ import java.util.List;
 public class InsertProductXmlList {
 
 
-
     @JacksonXmlProperty(localName = "goods_data")
     @JacksonXmlElementWrapper(useWrapping = false)
     List<InsertProductXml> goods_data = new ArrayList<>();

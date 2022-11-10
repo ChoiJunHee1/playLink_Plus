@@ -1,4 +1,5 @@
 package com.playLink_Plus.controller;
+
 import com.playLink_Plus.dto.TenantRegistrationDto;
 import com.playLink_Plus.entity.PlTenant;
 import com.playLink_Plus.service.PlTenantServiceInterface;
@@ -30,13 +31,12 @@ public class PlayLinkController {
 
         String service = tenantRegistrationDto.getService();
         String tenant = tenantRegistrationDto.getTenant();
-        Optional<PlTenant> result =  plTenantService.findTenantByServiceAndTenant(service, tenant);
+        Optional<PlTenant> result = plTenantService.findTenantByServiceAndTenant(service, tenant);
 
-        if(result.isPresent()){
-            log.info("========================>>>>>존재하는 회원사입니다. >>>"+result.get().getTenant());
-        }
-        else{
-            UUID uuid =UUID.randomUUID();
+        if (result.isPresent()) {
+            log.info("========================>>>>>존재하는 회원사입니다. >>>" + result.get().getTenant());
+        } else {
+            UUID uuid = UUID.randomUUID();
             PlTenant plTenant = PlTenant.builder()
                     .service(tenantRegistrationDto.getService())
                     .tenant(tenantRegistrationDto.getTenant())

@@ -35,7 +35,7 @@ public class ProductController {
     ProductServiceInterface productService = null;
     AuthServiceInterface auth_service = null;
 
-    HashMap<String, Object> reqData22 = new HashMap<String,Object>();
+    HashMap<String, Object> reqData22 = new HashMap<String, Object>();
 
 
     @GetMapping("/issuedItem")
@@ -46,7 +46,7 @@ public class ProductController {
         if (reqData.get("systemId").equals("cafe24")) {
             productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
         } else if (reqData.get("systemId").equals("godomall")) {
-            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository,upDateStockProductQtyRepository);
+            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository, upDateStockProductQtyRepository);
         }
         productService.issuedProductItem(reqData);
     }
@@ -58,13 +58,11 @@ public class ProductController {
         if (reqData.get("systemId").equals("cafe24")) {
             productService = new Cafe24ProductService(cafe24AuthService, productDetailRepository, productRepository);
         } else if (reqData.get("systemId").equals("godomall")) {
-            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository,upDateStockProductQtyRepository);
+            productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository, upDateStockProductQtyRepository);
         }
 
         productService.regDateSearchProductInfo(reqData);
     }
-
-
 
 
     @GetMapping("/upDateStockQty")
@@ -82,22 +80,15 @@ public class ProductController {
         } else if (reqDataHashMap.get("systemId").equals("godomall")) {
             productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository, upDateStockProductQtyRepository);
         }
-        productService.upDateStockQty(reqDataString,reqDataHashMap);
+        productService.upDateStockQty(reqDataString, reqDataHashMap);
 
     }
 
     @GetMapping("/upDateQtyXmlData/{systemId}/{mallId}")
-    public String upDateProduct_Qty(@PathVariable String systemId,@PathVariable String mallId) throws JsonProcessingException, ParseException {
-        productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository,upDateStockProductQtyRepository);
-        return productService.upDateQtyXmlData(systemId,mallId);
+    public String upDateProduct_Qty(@PathVariable String systemId, @PathVariable String mallId) throws JsonProcessingException, ParseException {
+        productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository, upDateStockProductQtyRepository);
+        return productService.upDateQtyXmlData(systemId, mallId);
 
     }
-//    @GetMapping(path = "/makeProductDataXml", produces = MediaType.APPLICATION_XML_VALUE)
-//    public String makeProductDataXml() {
-//        productService = new GodoMallProductService(authRepository, productRepository, productDetailRepository);
-//
-//        return productService.makeProductDataXml();
-//    }
-
 
 }

@@ -250,16 +250,16 @@ public class Cafe24ProductService implements ProductServiceInterface {
         int offsetInt = 0;
         String num = ProductCountData.get("count").toString();
         System.out.println(num);
-    if(!num.equals("0")){
+        if (!num.equals("0")) {
 
-        double offsetDouble = Double.parseDouble(num);
+            double offsetDouble = Double.parseDouble(num);
 
-        if (offsetDouble < 100) {
-            offsetInt = 0;
-        } else {
-            offsetDouble = Math.ceil(offsetDouble / 100);
-            offsetInt = (int) offsetDouble;
-        }
+            if (offsetDouble < 100) {
+                offsetInt = 0;
+            } else {
+                offsetDouble = Math.ceil(offsetDouble / 100);
+                offsetInt = (int) offsetDouble;
+            }
 
             List<ProductMaster> productOptionNull = new ArrayList<>();
             List<ProductMaster> products = new ArrayList<>();
@@ -365,12 +365,12 @@ public class Cafe24ProductService implements ProductServiceInterface {
                     log.error("에러에러에러");
                 }
             }
-        }else {
+        } else {
             log.info("추가된 상품 정보가 없습니다.");
         }
     }
 
-    public String upDateQtyXmlData(String systemId,String mallId) {
+    public String upDateQtyXmlData(String systemId, String mallId) {
 
         return null;
     }
@@ -387,10 +387,10 @@ public class Cafe24ProductService implements ProductServiceInterface {
         authMaster = cafe24_auth_service.refreshTokenIssued((String) reqDataHashMap.get("mall_id"));
 
         System.out.println(upDateQtyData);
-        List<Map<String,Object>> upDate_Item_List = (List<Map<String, Object>>) reqDataHashMap.get("upDate_Item_List");
-        for (int i= 0; i < upDate_Item_List.size(); i++) {
+        List<Map<String, Object>> upDate_Item_List = (List<Map<String, Object>>) reqDataHashMap.get("upDate_Item_List");
+        for (int i = 0; i < upDate_Item_List.size(); i++) {
             System.out.println(upDate_Item_List.get(i).get("product_no"));
-            Map<String,Object> request_Item = (Map<String, Object>) upDate_Item_List.get(i).get("request_Item");
+            Map<String, Object> request_Item = (Map<String, Object>) upDate_Item_List.get(i).get("request_Item");
             System.out.println(request_Item);
             HttpResponse<String> response = Unirest.put("https://" + reqDataHashMap.get("mall_id") + ".cafe24api.com/api/v2/admin/products/" + upDate_Item_List.get(i).get("product_no") + "/variants")
                     .header("Content-Type", apiVo.getInsertContentType())
